@@ -6,6 +6,8 @@ The **primary engine is [Ultraviolet](https://github.com/titaniumnetwork-dev/Ult
 
 This is a personal hop, not Tor and not an anonymity network.
 
+Want a public site that runs the proxy by itself? One Node process is the whole product — see [Host it as its own website](#host-it-as-its-own-website). GitHub Pages cannot do this.
+
 ## Quick start
 
 ```bash
@@ -118,11 +120,38 @@ What this stack does **not** do:
 
 Do not point Incog at systems you are not allowed to reach.
 
-## Deploy
+## Host it as its own website
 
-The proxy **must run on a Node host that supports WebSockets**. Plain GitHub Pages cannot run Wisp. Serverless platforms that drop `upgrade` requests (typical Vercel/Netlify functions) will serve the UI but **will not proxy**.
+Incog **is** the proxy. One Node process serves the UI, Ultraviolet, Scramjet, and the Wisp WebSocket server. There is no extra backend to attach and no tunnel back to a laptop.
 
-Good fits: Render, Railway, Fly.io, a VPS, or any long-lived Node process. `PORT` is honored. A `Procfile` (`web: npm start`) is included. Terminate TLS at the edge.
+GitHub Pages, Cloudflare Pages, and typical Vercel/Netlify functions cannot run this. They have no long-lived process and they drop `/wisp/` upgrades. The UI would load; browsing would not.
+
+Use a host that keeps a Node process up and passes WebSockets through.
+
+### Render (public URL, free)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Z3PH1RUS/Incog)
+
+1. Open the button (Render account + GitHub login; free web service is enough).
+2. Until this branch is merged to `main`, set the service branch to `cursor/incog-privacy-proxy-06c0`.
+3. After the first deploy you get a URL like `https://incog.onrender.com`. That origin runs the whole stack.
+
+`render.yaml` already sets `npm start`, `NODE_ENV=production`, and `/health`. Free instances sleep after ~15 minutes idle and take about a minute to wake.
+
+### Railway
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?repo=https://github.com/Z3PH1RUS/Incog)
+
+Same app: `npm start`, health check `/health`. Pick the branch that contains this code.
+
+### Docker / VPS
+
+```bash
+docker build -t incog .
+docker run --rm -p 3000:3000 incog
+```
+
+Or without Docker: `npm ci && npm start`. Listen address is `0.0.0.0` (`HOST`) and `PORT` (Render/Railway/Fly inject this). Put TLS on the edge (Caddy, nginx, the platform) and forward WebSocket upgrades for `/wisp/`.
 
 ## License
 

@@ -10,7 +10,9 @@ import { server as wisp } from "@mercuryworkshop/wisp-js/server";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, "../public");
+const HOST = process.env.HOST || "0.0.0.0";
 const PORT = Number(process.env.PORT) || 3000;
+const thisFile = fileURLToPath(import.meta.url);
 
 wisp.options.allow_private_ips = false;
 wisp.options.allow_loopback_ips = false;
@@ -88,11 +90,31 @@ server.on("upgrade", (req, socket, head) => {
   socket.end();
 });
 
-if (process.env.NODE_ENV !== "test") {
-  server.listen(PORT, () => {
-    console.log(`Incog ready at http://localhost:${PORT}`);
-    console.log("Engines: Ultraviolet + Scramjet over Wisp/Epoxy");
+function start(port = PORT, host = HOST) {
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, host, () => {
+      server.off("error", reject);
+      const addr = server.address();
+      const shown =
+        typeof addr === "object" && addr
+          ? `${addr.address}:${addr.port}`
+          : `${host}:${port}`;
+      console.log(`Incog ready at http://${shown}`);
+      console.log("Engines: Ultraviolet + Scramjet over Wisp/Epoxy");
+      resolve(server);
+    });
   });
 }
 
-export { app, server };
+const invokedDirectly =
+  process.argv[1] && path.resolve(process.argv[1]) === thisFile;
+
+if (invokedDirectly) {
+  start().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+
+export { app, server, start };
