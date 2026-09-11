@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0b0b0d">
+  <meta name="description" content="Incog is a private web proxy. Enter a URL and browse through a server-side hop.">
+  <title>Incog — private proxy</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <header class="topbar" data-view="home">
+    <a class="brand" href="/" aria-label="Incog home">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none">
+          <path d="M32 6L52 14.2V29.4C52 44.1 32 58 32 58S12 44.1 12 29.4V14.2L32 6Z" fill="#17151d" stroke="#6f63c9" stroke-width="1.6"/>
+          <path d="M18 31.5h28" stroke="#c9c4d8" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M21.5 24.8c4.2-1.4 8.2-2 10.5-2s6.3.6 10.5 2c1.6.5 2.5 1.8 2.5 3.2 0 1.2-.8 1.8-1.8 1.8H20.8c-1 0-1.8-.6-1.8-1.8 0-1.4.9-2.7 2.5-3.2Z" fill="#2a2733" stroke="#b7b1c8" stroke-width="1.4"/>
+          <circle cx="25.2" cy="35.6" r="3.3" stroke="#d7d2e4" stroke-width="1.6"/>
+          <circle cx="38.8" cy="35.6" r="3.3" stroke="#d7d2e4" stroke-width="1.6"/>
+          <path d="M28.6 35.6h6.8" stroke="#d7d2e4" stroke-width="1.4"/>
+        </svg>
+      </span>
+      <span class="wordmark">Incog</span>
+    </a>
+    <form class="omni" id="browse-form" hidden>
+      <label class="sr-only" for="browse-url">Destination URL</label>
+      <input id="browse-url" name="url" type="text" spellcheck="false" autocomplete="off" placeholder="https://example.com">
+      <button type="submit" class="go">Go</button>
+    </form>
+    <div class="top-actions" hidden>
+      <button type="button" class="ghost" id="home-btn">New tab</button>
+    </div>
+  </header>
+
+  <main class="stage" id="home">
+    <section class="hero">
+      <div class="badge">Private hop</div>
+      <h1>You’ve gone <em>incog</em>.</h1>
+      <p class="lede">
+        Enter a URL. Incog fetches the page from the server and shows it here,
+        so the destination sees this host — not your browser — as the client.
+      </p>
+
+      <form class="launch" id="home-form">
+        <label class="sr-only" for="home-url">Website address</label>
+        <div class="bar">
+          <span class="lock" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="5" y="11" width="14" height="10" rx="2.2" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M8 11V8.2a4 4 0 0 1 8 0V11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <input id="home-url" name="url" type="text" spellcheck="false" autocomplete="off" placeholder="Search the open web — https://example.com">
+          <button type="submit">Open</button>
+        </div>
+      </form>
+
+      <ul class="points">
+        <li>http(s) only</li>
+        <li>Private networks blocked</li>
+        <li>History stays on this device</li>
+      </ul>
+    </section>
+
+    <section class="history-wrap" id="history-wrap" hidden>
+      <div class="history-head">
+        <h2>Recent</h2>
+        <button type="button" class="text-btn" id="clear-history">Clear</button>
+      </div>
+      <ul class="history" id="history"></ul>
+    </section>
+  </main>
+
+  <section class="frame-wrap" id="browse" hidden>
+    <div class="progress" id="progress" hidden></div>
+    <iframe id="view" title="Proxied page" referrerpolicy="no-referrer"></iframe>
+  </section>
+
+  <footer class="foot" data-view="home">
+    <p>Incog is a personal proxy, not an anonymity network. Destinations see the server IP. Use it on a host you control.</p>
+  </footer>
+
+  <script src="/app.js" type="module"></script>
+</body>
+</html>
