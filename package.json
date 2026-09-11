@@ -1,7 +1,7 @@
 {
   "name": "incog",
   "version": "1.0.0",
-  "description": "Incognito-themed privacy web proxy",
+  "description": "Incognito-themed privacy web proxy powered by Ultraviolet and Scramjet",
   "type": "module",
   "main": "server/index.js",
   "license": "MIT",
@@ -17,11 +17,17 @@
   "keywords": [
     "proxy",
     "privacy",
-    "incognito"
+    "incognito",
+    "ultraviolet",
+    "scramjet"
   ],
   "dependencies": {
-    "cheerio": "^1.1.2",
+    "@mercuryworkshop/bare-mux": "^2.1.8",
+    "@mercuryworkshop/epoxy-transport": "2.1.28",
+    "@mercuryworkshop/scramjet": "1.1.0",
+    "@mercuryworkshop/wisp-js": "^0.5.0",
+    "@titaniumnetwork-dev/ultraviolet": "^3.2.10",
     "express": "^5.1.0",
-    "ipaddr.js": "^2.2.0"
+    "ws": "^8.19.0"
   }
 }
