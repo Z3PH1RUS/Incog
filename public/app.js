@@ -95,25 +95,69 @@ async function ensureTransport() {
   }
 }
 
-async function bootEngines() {
+function openIdb(name, version) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(name, version);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onupgradeneeded = () => {};
+  });
+}
+
+function deleteIdb(name) {
+  return new Promise((resolve) => {
+    const request = indexedDB.deleteDatabase(name);
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      resolve();
+    };
+    request.onsuccess = finish;
+    request.onerror = finish;
+    request.onblocked = () => setTimeout(finish, 400);
+    setTimeout(finish, 1500);
+  });
+}
+
+async function resetScramjetDbIfBroken() {
+  let stale = true;
+  try {
+    const db = await openIdb("$scramjet", 1);
+    stale = !db.objectStoreNames.contains("config");
+    db.close();
+  } catch {
+    stale = true;
+  }
+  if (!stale) return;
+  await deleteIdb("$scramjet");
+}
+
+async function bootShared() {
   if (!enginesReady) {
     enginesReady = (async () => {
       await registerSW();
       await ensureTransport();
-      const { ScramjetController } = window.$scramjetLoadController();
-      scramjet = new ScramjetController({
-        prefix: "/scramjet/",
-        files: {
-          wasm: "/scram/scramjet.wasm.wasm",
-          all: "/scram/scramjet.all.js",
-          sync: "/scram/scramjet.sync.js",
-        },
-      });
-      await scramjet.init();
-      scramjetFrame = scramjet.createFrame(frame);
     })();
   }
   return enginesReady;
+}
+
+async function bootScramjet() {
+  await bootShared();
+  if (scramjetFrame) return;
+  await resetScramjetDbIfBroken();
+  const { ScramjetController } = window.$scramjetLoadController();
+  scramjet = new ScramjetController({
+    prefix: "/scramjet/",
+    files: {
+      wasm: "/scram/scramjet.wasm.wasm",
+      all: "/scram/scramjet.all.js",
+      sync: "/scram/scramjet.sync.js",
+    },
+  });
+  await scramjet.init();
+  scramjetFrame = scramjet.createFrame(frame);
 }
 
 function readHistory() {
@@ -185,14 +229,15 @@ function encodeUv(url) {
 }
 
 async function navigate(url) {
-  await bootEngines();
   setBrowseMode(true);
   progress.hidden = false;
   if (settings.engine === "scramjet") {
+    await bootScramjet();
     scramjetFrame.go(url);
-  } else {
-    frame.src = encodeUv(url);
+    return;
   }
+  await bootShared();
+  frame.src = encodeUv(url);
 }
 
 async function openUrl(raw, { push = true, fromChrome = false } = {}) {
@@ -299,12 +344,14 @@ document.getElementById("theme-toggle").addEventListener("click", () => {
 });
 
 for (const radio of document.querySelectorAll('input[name="engine"]')) {
-  radio.addEventListener("change", () => {
+  radio.addEventListener("change", async () => {
     settings.engine = radio.value;
     saveSettings();
     syncSettingsUi();
     const current = new URLSearchParams(location.search).get("url");
-    if (current) openUrl(current, { push: false });
+    if (current) {
+      await openUrl(current, { push: false });
+    }
   });
 }
 
