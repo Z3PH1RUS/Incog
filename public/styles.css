@@ -56,7 +56,7 @@ body { min-height: 100vh; }
   border: 0;
 }
 
-.grain, .glow, .backdrop {
+.grain, .glow {
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -74,11 +74,6 @@ body { min-height: 100vh; }
     radial-gradient(ellipse at 50% 100%, rgba(12, 12, 14, 0.4), transparent 48%);
 }
 
-.backdrop {
-  background: rgba(6, 6, 8, 0.46);
-  pointer-events: auto;
-  z-index: 8;
-}
 
 .app {
   position: relative;
@@ -432,7 +427,6 @@ iframe {
 #history-wrap[hidden],
 #progress[hidden],
 #settings-panel[hidden],
-#backdrop[hidden],
 #ua-custom-wrap[hidden],
 #toast[hidden] { display: none; }
 

@@ -25,7 +25,6 @@ const progress = document.getElementById("progress");
 const historyWrap = document.getElementById("history-wrap");
 const historyList = document.getElementById("history");
 const settingsPanel = document.getElementById("settings-panel");
-const backdrop = document.getElementById("backdrop");
 const enginePill = document.getElementById("engine-pill");
 const toast = document.getElementById("toast");
 const uaCustomWrap = document.getElementById("ua-custom-wrap");
@@ -219,7 +218,7 @@ function syncSettingsUi() {
 
 function setSettingsOpen(open) {
   settingsPanel.hidden = !open;
-  backdrop.hidden = !open;
+  document.body.classList.toggle("settings-open", open);
   document.getElementById("settings-toggle").setAttribute("aria-expanded", String(open));
   if (open) document.getElementById("setting-theme").focus();
 }
@@ -330,7 +329,6 @@ document.getElementById("settings-toggle").addEventListener("click", () => {
   setSettingsOpen(settingsPanel.hidden);
 });
 document.getElementById("settings-close").addEventListener("click", () => setSettingsOpen(false));
-backdrop.addEventListener("click", () => setSettingsOpen(false));
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") setSettingsOpen(false);
 });
