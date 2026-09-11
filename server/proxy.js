@@ -42,6 +42,11 @@ function createPinnedAgent(address, family) {
     connect: {
       timeout: FETCH_TIMEOUT_MS,
       lookup(hostname, options, callback) {
+        const records = [{ address, family }];
+        if (options && options.all) {
+          callback(null, records);
+          return;
+        }
         callback(null, address, family);
       },
     },
@@ -49,7 +54,7 @@ function createPinnedAgent(address, family) {
 }
 
 async function fetchPinned(url, addresses, init) {
-  const pinned = addresses[0];
+  const pinned = addresses.find((entry) => entry.family === 4) || addresses[0];
   const agent = createPinnedAgent(pinned.address, pinned.family);
   try {
     return await undiciFetch(url.href, {
