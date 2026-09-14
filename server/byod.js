@@ -1,4 +1,4 @@
-import { resolve4, resolveCname } from "node:dns/promises";
+import { resolve4, resolveCname, resolveNs } from "node:dns/promises";
 
 const HOSTNAME =
   /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/;
@@ -14,7 +14,7 @@ export const CNAME_TARGET = (
 const DEFAULT_HINTS = {
   "incog.ignorelist.com": {
     cname: "3j6hiavn.up.railway.app",
-    txtName: "_railway-verify.incog",
+    txtName: "_railway-verify",
     txtHost: "_railway-verify.incog.ignorelist.com",
     txt: "railway-verify=06f85953454d1d0fe4ce86fb8af92dd9055a065f5a204fa2527f0b777d4cd598",
   },
@@ -46,6 +46,23 @@ export async function targetARecords(target = CNAME_TARGET) {
     return [...new Set(await resolve4(stripDot(target)))];
   } catch {
     return [];
+  }
+}
+
+export function parentZone(domain) {
+  const parts = stripDot(domain).split(".");
+  if (parts.length < 2) return stripDot(domain);
+  return parts.slice(-2).join(".");
+}
+
+export async function isAfraidOrgHost(domain) {
+  try {
+    const ns = await resolveNs(parentZone(domain));
+    return ns.some((name) => stripDot(name).endsWith("afraid.org"));
+  } catch {
+    return /(?:^|\.)(ignorelist\.com|mooo\.com|chickenkiller\.com|us\.to|uk\.to)$/i.test(
+      domain,
+    );
   }
 }
 
@@ -110,15 +127,25 @@ export function recordsForDomain(domain) {
   };
 }
 
-export function byodSetupMessage({ domain, attached, verified, train404, records }) {
+export function byodSetupMessage({
+  domain,
+  attached,
+  verified,
+  train404,
+  records,
+  freedns,
+}) {
   if (verified) {
     return `https://${domain} is live.`;
+  }
+  if (freedns && records?.cname && records?.txt) {
+    return `FreeDNS will not accept a CNAME on this hostname. Keep ${domain} by delegating NS to Cloudflare, then put CNAME @ → ${records.cname} and TXT ${records.txtName} → ${records.txt} there (DNS only). Or create a Dynu hostname that allows CNAME.`;
   }
   if (records?.cname && records?.txt) {
     const delA = train404
       ? "Railway’s train 404 means the A record hit the edge without a verified custom domain. Delete that A record. "
       : "";
-    return `${delA}Add CNAME ${domain} → ${records.cname} and TXT ${records.txtName} → ${records.txt}. If FreeDNS says CNAME is restricted, use Dynu for the CNAME (A records will keep showing the train page).`;
+    return `${delA}Add CNAME ${domain} → ${records.cname} and TXT ${records.txtName} → ${records.txt}.`;
   }
   if (attached) {
     return `https://${domain} is on Railway. Set the CNAME and TXT Railway shows for this hostname, then wait for TLS.`;

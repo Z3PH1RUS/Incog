@@ -24,9 +24,10 @@ describe("standalone website server", () => {
     assert.match(html, /Incog/);
     assert.match(html, /ultraviolet/i);
     assert.match(html, /\/app\.js/);
-    assert.match(html, /train has not arrived/);
+    assert.match(html, /NS/);
+    assert.match(html, /Cloudflare/);
     assert.match(html, /3j6hiavn\.up\.railway\.app/);
-    assert.match(html, /_railway-verify\.incog/);
+    assert.match(html, /_railway-verify/);
 
     const uv = await fetch(`${base}/uv/uv.bundle.js`);
     assert.equal(uv.status, 200);
@@ -51,8 +52,9 @@ describe("standalone website server", () => {
     assert.equal(attachBody.ok, true);
     assert.equal(attachBody.domain, "incog.ignorelist.com");
     assert.equal(attachBody.records.cname, "3j6hiavn.up.railway.app");
-    assert.match(attachBody.message, /CNAME/);
-    assert.match(attachBody.message, /TXT/);
+    assert.match(attachBody.message, /Cloudflare/);
+    assert.match(attachBody.message, /NS/);
+    assert.equal(attachBody.freedns, true);
   });
 
   after(

@@ -16,18 +16,20 @@ describe("parseByodDomain", () => {
 });
 
 describe("byod setup copy", () => {
-  it("explains the train 404 when an A record is pointing at Railway", () => {
+  it("tells FreeDNS users to NS-delegate instead of CNAME", () => {
     const records = byodHints()["incog.ignorelist.com"];
     const message = byodSetupMessage({
       domain: "incog.ignorelist.com",
       attached: true,
       verified: false,
       train404: true,
+      freedns: true,
       records,
     });
-    assert.match(message, /train 404/);
+    assert.match(message, /will not accept a CNAME/);
+    assert.match(message, /NS/);
+    assert.match(message, /Cloudflare/);
     assert.match(message, /3j6hiavn\.up\.railway\.app/);
-    assert.match(message, /_railway-verify\.incog/);
     assert.match(message, /Dynu/);
   });
 });

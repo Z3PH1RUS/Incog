@@ -98,11 +98,17 @@
               <h2>Bring your own hostname</h2>
               <p>You cannot mint a brand-new <code>.com</code> for free. Every public URL is a name under <em>someone’s</em> domain. What you can do without buying anything is take a <strong>free subdomain</strong> so the address bar is not Railway, GitHub, or Vercel.</p>
               <ol class="byod-steps">
-                <li>Create a free hostname at <a href="https://freedns.afraid.org/" rel="noopener noreferrer">FreeDNS</a> or <a href="https://www.dynu.com/en-US/ControlPanel/AddDDNS" rel="noopener noreferrer">Dynu</a>.</li>
-                <li>Paste it below and Attach. Incog shows the CNAME and TXT Railway needs for HTTPS.</li>
-                <li>If FreeDNS says CNAME is restricted, use Dynu for the CNAME. An A record to Railway’s IP produces the train 404 page.</li>
+                <li>FreeDNS shared domains block CNAME. Railway still needs a CNAME, so do not put an A record on FreeDNS.</li>
+                <li>To keep a name like <code>incog.ignorelist.com</code>, delegate it with <strong>NS</strong> records to Cloudflare, then add the CNAME and TXT there.</li>
+                <li>Or skip FreeDNS and create a hostname at <a href="https://www.dynu.com/en-US/ControlPanel/AddDDNS" rel="noopener noreferrer">Dynu</a>, which allows CNAME.</li>
               </ol>
-              <p class="byod-callout">Railway’s “train has not arrived” page means the hostname reached Railway but is not a verified custom domain. Delete the A record. Add the CNAME and TXT below — not an IP address.</p>
+              <p class="byod-callout">That FreeDNS message is a platform limit, not a typo. NS records are allowed. CNAME records are not. Cloudflare (grey cloud / DNS only) can hold the CNAME Railway requires.</p>
+              <ol class="byod-steps">
+                <li>Create a free <a href="https://dash.cloudflare.com/sign-up" rel="noopener noreferrer">Cloudflare</a> account and add site <code>incog.ignorelist.com</code>.</li>
+                <li>Copy the two nameservers Cloudflare shows (they look like <code>ada.ns.cloudflare.com</code>).</li>
+                <li>On FreeDNS, delete the A record. Add two <strong>NS</strong> records for host <code>incog</code>, Destination = those nameservers.</li>
+                <li>In Cloudflare DNS, proxy <strong>off</strong>: CNAME <code>@</code> → the target below, and TXT <code>_railway-verify</code> → the value below.</li>
+              </ol>
               <form class="byod-form" id="byod-form">
                 <label class="sr-only" for="byod-domain">Your domain</label>
                 <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.ignorelist.com" autocomplete="off">
@@ -110,14 +116,14 @@
               </form>
               <div id="byod-records">
                 <div class="dns-row dns-row-primary">
-                  <span class="dns-type">CNAME</span>
+                  <span class="dns-type">CNAME @</span>
                   <code id="byod-cname">3j6hiavn.up.railway.app</code>
                   <button type="button" class="ghost" id="byod-copy">Copy CNAME</button>
                 </div>
                 <div class="dns-row">
-                  <span class="dns-type">TXT host</span>
-                  <code id="byod-txt-host">_railway-verify.incog</code>
-                  <button type="button" class="ghost" id="byod-copy-txt-host">Copy host</button>
+                  <span class="dns-type">TXT name</span>
+                  <code id="byod-txt-host">_railway-verify</code>
+                  <button type="button" class="ghost" id="byod-copy-txt-host">Copy name</button>
                 </div>
                 <div class="dns-row dns-row-stack">
                   <span class="dns-type">TXT value</span>
@@ -125,7 +131,7 @@
                   <code id="byod-txt">railway-verify=06f85953454d1d0fe4ce86fb8af92dd9055a065f5a204fa2527f0b777d4cd598</code>
                 </div>
               </div>
-              <p class="hint">FreeDNS Destination for the CNAME is the <code>*.up.railway.app</code> hostname, not four numbers. TXT is a separate hostname.</p>
+              <p class="hint">In Cloudflare the TXT name is <code>_railway-verify</code> (they append your zone). Leave the orange cloud off so Railway can see the CNAME.</p>
               <p class="hint" id="byod-status"></p>
             </article>
             <div class="chips" id="popular">
