@@ -3,6 +3,8 @@ services:
     name: incog
     runtime: node
     plan: free
+    repo: https://github.com/Z3PH1RUS/Incog
+    branch: main
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /health

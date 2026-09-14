@@ -6,7 +6,9 @@ The **primary engine is [Ultraviolet](https://github.com/titaniumnetwork-dev/Ult
 
 This is a personal hop, not Tor and not an anonymity network.
 
-Want a public site that runs the proxy by itself? One Node process is the whole product — see [Host it as its own website](#host-it-as-its-own-website). GitHub Pages cannot do this.
+**Live site:** [https://incog-production-591c.up.railway.app](https://incog-production-591c.up.railway.app)
+
+Want to host your own copy? One Node process is the whole product — see [Host it as its own website](#host-it-as-its-own-website). GitHub Pages cannot do this.
 
 ## Quick start
 
@@ -133,16 +135,17 @@ Use a host that keeps a Node process up and passes WebSockets through.
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Z3PH1RUS/Incog)
 
 1. Open the button (Render account + GitHub login; free web service is enough).
-2. Until this branch is merged to `main`, set the service branch to `cursor/incog-privacy-proxy-06c0`.
-3. After the first deploy you get a URL like `https://incog.onrender.com`. That origin runs the whole stack.
+2. After the first deploy you get a URL like `https://incog.onrender.com`. That origin runs the whole stack.
 
 `render.yaml` already sets `npm start`, `NODE_ENV=production`, and `/health`. Free instances sleep after ~15 minutes idle and take about a minute to wake.
 
 ### Railway
 
+Live deployment: [https://incog-production-591c.up.railway.app](https://incog-production-591c.up.railway.app)
+
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?repo=https://github.com/Z3PH1RUS/Incog)
 
-Same app: `npm start`, health check `/health`. Pick the branch that contains this code.
+Same app: `npm start`, health check `/health`. Deploys from `main`.
 
 ### Docker / VPS
 
