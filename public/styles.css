@@ -517,6 +517,15 @@ iframe {
   overflow-wrap: anywhere;
 }
 
+.dns-row-stack {
+  align-items: flex-start;
+}
+
+.dns-row-stack code {
+  flex: 1 1 100%;
+  order: 3;
+}
+
 .byod-form {
   display: flex;
   gap: 8px;
