@@ -13,6 +13,7 @@ import {
   domainPointsAtTarget,
   parseByodDomain,
   railwayConfig,
+  targetARecords,
 } from "./byod.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -63,13 +64,16 @@ app.get("/health", (_req, res) => {
   });
 });
 
-app.get("/api/byod", (_req, res) => {
+app.get("/api/byod", async (_req, res) => {
+  const a = await targetARecords();
   res.json({
     ok: true,
     cname: CNAME_TARGET,
+    a,
     attach: Boolean(railwayConfig()),
     records: [
-      { type: "CNAME", host: "@ or a subdomain", value: CNAME_TARGET },
+      { type: "CNAME", host: "subdomain", value: CNAME_TARGET },
+      ...a.map((ip) => ({ type: "A", host: "subdomain", value: ip })),
     ],
   });
 });
@@ -81,7 +85,7 @@ app.post("/api/byod", express.json({ limit: "8kb" }), async (req, res) => {
     if (!pointed) {
       res.status(400).json({
         ok: false,
-        error: `DNS does not point here yet. Add a CNAME to ${CNAME_TARGET}.`,
+        error: `DNS does not point here yet. FreeDNS free plans often block CNAME — add an A record to ${CNAME_TARGET}'s current IPv4 instead.`,
       });
       return;
     }

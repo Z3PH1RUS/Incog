@@ -357,6 +357,17 @@ byodCopy?.addEventListener("click", async () => {
   }
 });
 
+document.getElementById("byod-copy-a")?.addEventListener("click", async () => {
+  const value = document.getElementById("byod-a")?.textContent?.trim().split(/\s+/)[0];
+  if (!value || value === "checking…" || value === "unavailable") return;
+  try {
+    await navigator.clipboard.writeText(value);
+    toastMsg("A record IP copied");
+  } catch {
+    toastMsg(value);
+  }
+});
+
 byodForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   byodStatus.textContent = "Checking DNS…";
@@ -380,6 +391,9 @@ async function loadByod() {
     const res = await fetch("/api/byod");
     const body = await res.json();
     if (body.cname && byodCname) byodCname.textContent = body.cname;
+    const ips = Array.isArray(body.a) ? body.a : [];
+    const aEl = document.getElementById("byod-a");
+    if (aEl) aEl.textContent = ips.join(" ") || "unavailable";
   } catch {
     // keep the HTML fallback
   }

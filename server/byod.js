@@ -32,6 +32,14 @@ function stripDot(host) {
     .toLowerCase();
 }
 
+export async function targetARecords(target = CNAME_TARGET) {
+  try {
+    return [...new Set(await resolve4(stripDot(target)))];
+  } catch {
+    return [];
+  }
+}
+
 export async function domainPointsAtTarget(domain, target = CNAME_TARGET) {
   const want = stripDot(target);
   try {

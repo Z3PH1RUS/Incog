@@ -98,16 +98,21 @@
               <h2>Bring your own hostname</h2>
               <p>You cannot mint a brand-new <code>.com</code> for free. Every public URL is a name under <em>someone’s</em> domain. What you can do without buying anything is take a <strong>free subdomain</strong> so the address bar is not Railway, GitHub, or Vercel.</p>
               <ol class="byod-steps">
-                <li>Create a free hostname at <a href="https://freedns.afraid.org/" rel="noopener noreferrer">FreeDNS</a> (CNAME records). Skip DuckDNS — it only takes an IP, and Railway’s IP is not stable.</li>
-                <li>CNAME that hostname to the target below (examples look like <code>incog.mooo.com</code>, not <code>*.up.railway.app</code>).</li>
-                <li>Paste it here and Attach so HTTPS can be issued.</li>
+                <li>Create a free hostname at <a href="https://freedns.afraid.org/" rel="noopener noreferrer">FreeDNS</a>.</li>
+                <li>If it says <strong>CNAME is restricted</strong>, that is the free plan. Create an <strong>A</strong> record instead, using the IPv4 below (not Frogie’s IP).</li>
+                <li>If CNAME is allowed, point it at the CNAME target. Then paste the hostname here and Attach.</li>
               </ol>
               <div class="dns-row">
                 <span class="dns-type">CNAME</span>
                 <code id="byod-cname">incog-production-591c.up.railway.app</code>
                 <button type="button" class="ghost" id="byod-copy">Copy</button>
               </div>
-              <p class="hint">Apex paid domains still need ALIAS/ANAME or Cloudflare flattening. Do not point at Frogie or a random A record.</p>
+              <div class="dns-row" id="byod-a-row">
+                <span class="dns-type">A</span>
+                <code id="byod-a">checking…</code>
+                <button type="button" class="ghost" id="byod-copy-a">Copy</button>
+              </div>
+              <p class="hint">Railway IPs can change. Reload this page before you set the A record. Dynu free hostnames can still use CNAME if you prefer that.</p>
               <form class="byod-form" id="byod-form">
                 <label class="sr-only" for="byod-domain">Your domain</label>
                 <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.mooo.com" autocomplete="off">

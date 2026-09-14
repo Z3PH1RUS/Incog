@@ -36,6 +36,7 @@ describe("standalone website server", () => {
     const byodBody = await byod.json();
     assert.equal(byodBody.ok, true);
     assert.ok(byodBody.cname);
+    assert.ok(Array.isArray(byodBody.a));
   });
 
   after(
