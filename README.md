@@ -147,7 +147,11 @@ Live deployment: [https://incog-production-591c.up.railway.app](https://incog-pr
 
 Same app: `npm start`, health check `/health`. Deploys from `main`.
 
-### How nowgg.fun is run (copy this)
+### Custom domains (paused)
+
+The live product is the Railway URL above. FreeDNS/Dynu CNAMEs were parked after Railway’s train-404 / TXT-quota issues.
+
+### How nowgg.fun is run (reference)
 
 [nowgg.fun](https://nowgg.fun/) is Frogie’s Arcade, not Railway:
 

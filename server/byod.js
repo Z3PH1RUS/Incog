@@ -1,3 +1,11 @@
+/**
+ * Optional BYOD: attach a hostname the user already owns to this Railway
+ * service. The live site we are using is
+ * https://incog-production-591c.up.railway.app/ — custom domains are paused.
+ *
+ * Railway only serves HTTPS for hostnames registered on the service
+ * (CNAME + TXT). A-only DNS to the service IPv4 is not enough.
+ */
 import { resolve4, resolveCname, resolveNs } from "node:dns/promises";
 
 const HOSTNAME =
