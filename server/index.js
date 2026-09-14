@@ -10,9 +10,12 @@ import { server as wisp } from "@mercuryworkshop/wisp-js/server";
 import {
   CNAME_TARGET,
   attachRailwayDomain,
+  byodHints,
+  byodSetupMessage,
   domainPointsAtTarget,
   parseByodDomain,
   railwayConfig,
+  recordsForDomain,
   targetARecords,
 } from "./byod.js";
 
@@ -64,44 +67,49 @@ app.get("/health", (_req, res) => {
   });
 });
 
-app.get("/api/byod", async (_req, res) => {
+app.get("/api/byod", async (req, res) => {
   const a = await targetARecords();
+  const requested = String(req.query.domain || "").trim();
+  let domain = "";
+  try {
+    if (requested) domain = parseByodDomain(requested);
+  } catch {
+    domain = "";
+  }
+  const records = domain ? recordsForDomain(domain) : null;
   res.json({
     ok: true,
     cname: CNAME_TARGET,
     a,
     attach: Boolean(railwayConfig()),
-    records: [
-      { type: "CNAME", host: "subdomain", value: CNAME_TARGET },
-      ...a.map((ip) => ({ type: "A", host: "subdomain", value: ip })),
-    ],
+    hints: byodHints(),
+    records,
   });
 });
 
 app.post("/api/byod", express.json({ limit: "8kb" }), async (req, res) => {
   try {
     const domain = parseByodDomain(req.body?.domain);
-    const pointed = await domainPointsAtTarget(domain);
-    if (!pointed) {
-      const ips = await targetARecords();
-      const ipHint = ips.length
-        ? ips.join(" or ")
-        : "the IPv4 shown on this page";
-      res.status(400).json({
-        ok: false,
-        error: `DNS does not point here yet. On FreeDNS, Type = A and Destination = ${ipHint} (numbers only). Do not paste ${CNAME_TARGET} into Destination — that hostname is not an IP.`,
-      });
-      return;
-    }
+    const dns = await domainPointsAtTarget(domain);
+    const train404 = dns === "a";
     const attach = await attachRailwayDomain(domain);
+    const records = attach.records || recordsForDomain(domain);
+    const verified = Boolean(attach.verified);
     res.json({
       ok: true,
       domain,
-      dns: pointed,
+      dns,
+      train404,
       attached: attach.attached,
-      message: attach.attached
-        ? `https://${domain} is attached. TLS can take a minute.`
-        : `DNS looks good. HTTPS needs this domain added on Railway: railway domain ${domain}`,
+      verified,
+      records,
+      message: byodSetupMessage({
+        domain,
+        attached: attach.attached,
+        verified,
+        train404,
+        records,
+      }),
     });
   } catch (error) {
     res.status(400).json({

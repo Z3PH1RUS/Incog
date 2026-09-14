@@ -98,31 +98,34 @@
               <h2>Bring your own hostname</h2>
               <p>You cannot mint a brand-new <code>.com</code> for free. Every public URL is a name under <em>someone’s</em> domain. What you can do without buying anything is take a <strong>free subdomain</strong> so the address bar is not Railway, GitHub, or Vercel.</p>
               <ol class="byod-steps">
-                <li>Create a free hostname at <a href="https://freedns.afraid.org/" rel="noopener noreferrer">FreeDNS</a>.</li>
-                <li>Type must be <strong>A</strong>. The Destination field is an IPv4 — four numbers with dots, like the box below. It will reject a hostname.</li>
-                <li>Paste your new name here (for example <code>incog.mooo.com</code>) and Attach.</li>
+                <li>Create a free hostname at <a href="https://freedns.afraid.org/" rel="noopener noreferrer">FreeDNS</a> or <a href="https://www.dynu.com/en-US/ControlPanel/AddDDNS" rel="noopener noreferrer">Dynu</a>.</li>
+                <li>Paste it below and Attach. Incog shows the CNAME and TXT Railway needs for HTTPS.</li>
+                <li>If FreeDNS says CNAME is restricted, use Dynu for the CNAME. An A record to Railway’s IP produces the train 404 page.</li>
               </ol>
-              <p class="byod-callout">If FreeDNS says <code>incog-production-591c.up.railway.app</code> is an invalid IP, you put the Railway name in Destination. Put the <strong>A</strong> IPv4 there instead.</p>
-              <div class="dns-row dns-row-primary" id="byod-a-row">
-                <span class="dns-type">A · Destination</span>
-                <code id="byod-a">69.46.46.106</code>
-                <button type="button" class="ghost" id="byod-copy-a">Copy IP</button>
-              </div>
-              <p class="hint">That value is numbers only. Do not paste <code>incog-production-591c.up.railway.app</code> into Destination. Railway IPs can change — reload this page before you save DNS.</p>
-              <details class="byod-cname-alt">
-                <summary>CNAME (only if your DNS host allows it)</summary>
-                <div class="dns-row">
-                  <span class="dns-type">CNAME</span>
-                  <code id="byod-cname">incog-production-591c.up.railway.app</code>
-                  <button type="button" class="ghost" id="byod-copy">Copy hostname</button>
-                </div>
-                <p class="hint">FreeDNS shared domains block CNAME. Dynu free hostnames can still use this.</p>
-              </details>
+              <p class="byod-callout">Railway’s “train has not arrived” page means the hostname reached Railway but is not a verified custom domain. Delete the A record. Add the CNAME and TXT below — not an IP address.</p>
               <form class="byod-form" id="byod-form">
                 <label class="sr-only" for="byod-domain">Your domain</label>
-                <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.mooo.com" autocomplete="off">
+                <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.ignorelist.com" autocomplete="off">
                 <button type="submit" class="go">Attach</button>
               </form>
+              <div id="byod-records">
+                <div class="dns-row dns-row-primary">
+                  <span class="dns-type">CNAME</span>
+                  <code id="byod-cname">3j6hiavn.up.railway.app</code>
+                  <button type="button" class="ghost" id="byod-copy">Copy CNAME</button>
+                </div>
+                <div class="dns-row">
+                  <span class="dns-type">TXT host</span>
+                  <code id="byod-txt-host">_railway-verify.incog</code>
+                  <button type="button" class="ghost" id="byod-copy-txt-host">Copy host</button>
+                </div>
+                <div class="dns-row">
+                  <span class="dns-type">TXT value</span>
+                  <code id="byod-txt">railway-verify=06f85953454d1d0fe4ce86fb8af92dd9055a065f5a204fa2527f0b777d4cd598</code>
+                  <button type="button" class="ghost" id="byod-copy-txt">Copy TXT</button>
+                </div>
+              </div>
+              <p class="hint">FreeDNS Destination for the CNAME is the <code>*.up.railway.app</code> hostname, not four numbers. TXT is a separate hostname.</p>
               <p class="hint" id="byod-status"></p>
             </article>
             <div class="chips" id="popular">

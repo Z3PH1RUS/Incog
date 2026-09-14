@@ -24,9 +24,9 @@ describe("standalone website server", () => {
     assert.match(html, /Incog/);
     assert.match(html, /ultraviolet/i);
     assert.match(html, /\/app\.js/);
-    assert.match(html, /Copy IP/);
-    assert.match(html, /invalid IP/);
-    assert.match(html, /69\.46\.46\.106/);
+    assert.match(html, /train has not arrived/);
+    assert.match(html, /3j6hiavn\.up\.railway\.app/);
+    assert.match(html, /_railway-verify\.incog/);
 
     const uv = await fetch(`${base}/uv/uv.bundle.js`);
     assert.equal(uv.status, 200);
@@ -44,12 +44,15 @@ describe("standalone website server", () => {
     const attach = await fetch(`${base}/api/byod`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ domain: "example.com" }),
+      body: JSON.stringify({ domain: "incog.ignorelist.com" }),
     });
-    assert.equal(attach.status, 400);
+    assert.equal(attach.status, 200);
     const attachBody = await attach.json();
-    assert.match(attachBody.error, /numbers only/);
-    assert.match(attachBody.error, /not an IP/);
+    assert.equal(attachBody.ok, true);
+    assert.equal(attachBody.domain, "incog.ignorelist.com");
+    assert.equal(attachBody.records.cname, "3j6hiavn.up.railway.app");
+    assert.match(attachBody.message, /CNAME/);
+    assert.match(attachBody.message, /TXT/);
   });
 
   after(

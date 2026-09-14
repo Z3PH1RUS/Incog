@@ -153,17 +153,20 @@ Incog can answer on **your** hostname. That new URL is the same proxy.
 
 You cannot get a unique `something.com` without paying a registrar (or a rare free TLD with a waitlist). You *can* get a **free subdomain** that does not say Railway or GitHub in the address bar:
 
-1. Sign up at [FreeDNS](https://freedns.afraid.org/).
-2. Free plans often show **CNAME is restricted**. Create an **A** record. Destination must be an IPv4 (four numbers with dots) from Incog → BYOD, currently resolved live from `incog-production-591c.up.railway.app`. If FreeDNS says that hostname is an invalid IP, you pasted the name into Destination — paste the IPv4 instead. Do not use Frogie’s `69.164.251.210`.
-3. If the domain allows CNAME, point it at `incog-production-591c.up.railway.app`.
-4. Open Incog → **BYOD**, paste the hostname, Attach.
+1. Sign up at [FreeDNS](https://freedns.afraid.org/) or [Dynu](https://www.dynu.com/en-US/ControlPanel/AddDDNS).
+2. Open Incog → **BYOD**, paste the hostname, Attach.
+3. Add the **CNAME** and **TXT** Railway returns. Do not create an A record to Railway’s service IP — that is the “train has not arrived” 404.
+4. If FreeDNS says **CNAME is restricted**, use Dynu. Railway does not issue TLS for A records.
 
-Railway A records can change; reload BYOD before you set DNS. Dynu free hostnames still allow CNAME.
+`incog.ignorelist.com` is already attached. It needs:
 
-If `RAILWAY_TOKEN` is set on the service, Incog registers HTTPS. Otherwise:
+- CNAME `incog.ignorelist.com` → `3j6hiavn.up.railway.app`
+- TXT `_railway-verify.incog.ignorelist.com` → `railway-verify=06f85953454d1d0fe4ce86fb8af92dd9055a065f5a204fa2527f0b777d4cd598`
+
+If `RAILWAY_TOKEN` or `RAILWAY_PROJECT_TOKEN` is set on the service, Incog registers the hostname. Otherwise:
 
 ```bash
-railway domain incog.mooo.com --service incog
+railway domain incog.ignorelist.com --service incog
 ```
 
 Override the CNAME target with `INCOG_CNAME_TARGET` if you host Incog somewhere else.
