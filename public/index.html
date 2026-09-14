@@ -98,17 +98,18 @@
               <h2>Bring your own hostname</h2>
               <p>You cannot mint a brand-new <code>.com</code> for free. Every public URL is a name under <em>someone’s</em> domain. What you can do without buying anything is take a <strong>free subdomain</strong> so the address bar is not Railway, GitHub, or Vercel.</p>
               <ol class="byod-steps">
-                <li>The train page means Railway does not accept this hostname yet. Your CNAME still says <code>qom0vyax.up.railway.app</code> — that host was for the old name and is dead.</li>
-                <li>Edit the CNAME to <code>2q9gavwd.up.railway.app</code> exactly. Then add the TXT below.</li>
-                <li>If TXT asks for membership, delete leftover A/AAAA first. Free Dynu allows 4 records.</li>
+                <li><a href="https://nowgg.fun/" rel="noopener noreferrer">nowgg.fun</a> is not Railway. It is Cloudflare DNS + a VPS A record + Caddy HTTPS in front of Express. Copy that, not Dynu TXT.</li>
+                <li>Free path: Cloudflare Worker in <code>deploy/cf-worker.js</code> proxies to this Railway app and issues HTTPS. Deploy it, then open <code>*.workers.dev</code> — no TXT, no train page.</li>
+                <li>To keep <code>incog.freeddns.org</code>: Cloudflare → Add site <code>incog.freeddns.org</code>. On Dynu delete the CNAME and add two <strong>NS</strong> records to those Cloudflare nameservers. Route the Worker (or orange-cloud) to this hostname.</li>
               </ol>
-              <p class="byod-callout">Do not leave the CNAME on <code>qom0vyax</code>. That is why you still see the train.</p>
+              <p class="byod-callout">The train page happens when Railway owns HTTPS. nowgg.fun lets Caddy or Cloudflare own HTTPS instead. Do not CNAME Dynu at Railway.</p>
               <form class="byod-form" id="byod-form">
                 <label class="sr-only" for="byod-domain">Your domain</label>
                 <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.freeddns.org" autocomplete="off">
                 <button type="submit" class="go">Attach</button>
               </form>
-              <div id="byod-records">
+              <details class="byod-cname-alt">
+                <summary>Railway CNAME + TXT (only if you stay on Dynu DNS)</summary>
                 <div class="dns-row dns-row-primary">
                   <span class="dns-type">CNAME</span>
                   <code id="byod-cname">2q9gavwd.up.railway.app</code>
@@ -124,8 +125,7 @@
                   <button type="button" class="ghost" id="byod-copy-txt">Copy TXT</button>
                   <code id="byod-txt">railway-verify=bd987f426bf453b447c1253ca856a2ca53310b0c5a9cb5314538370feae76635</code>
                 </div>
-              </div>
-              <p class="hint">After both records save, wait a minute and open <a href="https://incog.freeddns.org">https://incog.freeddns.org</a>.</p>
+              </details>
               <p class="hint" id="byod-status"></p>
             </article>
             <div class="chips" id="popular">

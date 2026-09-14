@@ -1,0 +1,6 @@
+name = "incog"
+main = "cf-worker.js"
+compatibility_date = "2026-09-14"
+
+[vars]
+ORIGIN = "incog-production-591c.up.railway.app"

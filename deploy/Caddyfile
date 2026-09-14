@@ -1,0 +1,7 @@
+# Same edge pattern as nowgg.fun: Caddy terminates HTTPS, Express is the app.
+# Point an A record at this VPS, then Caddy gets a Let's Encrypt cert (HTTP-01).
+# No Railway CNAME/TXT. Replace the hostname before you start.
+
+{$INCOG_DOMAIN:localhost} {
+	reverse_proxy incog:3000
+}

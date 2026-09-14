@@ -24,10 +24,11 @@ describe("standalone website server", () => {
     assert.match(html, /Incog/);
     assert.match(html, /ultraviolet/i);
     assert.match(html, /\/app\.js/);
-    assert.match(html, /Dynu/);
+    assert.match(html, /nowgg\.fun/);
+    assert.match(html, /Cloudflare/);
     assert.match(html, /incog\.freeddns\.org/);
     assert.match(html, /2q9gavwd\.up\.railway\.app/);
-    assert.match(html, /_railway-verify/);
+    assert.match(html, /cf-worker/);
 
     const uv = await fetch(`${base}/uv/uv.bundle.js`);
     assert.equal(uv.status, 200);

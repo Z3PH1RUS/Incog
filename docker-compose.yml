@@ -1,0 +1,33 @@
+# Frogie-style deploy: static IP + Caddy + Express.
+# 1. Point your domain's A record at this machine.
+# 2. INCOG_DOMAIN=incog.example.com docker compose up -d --build
+
+services:
+  incog:
+    build: .
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      NODE_ENV: production
+    restart: unless-stopped
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - incog
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      INCOG_DOMAIN: ${INCOG_DOMAIN:-localhost}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

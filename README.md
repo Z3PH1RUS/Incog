@@ -147,25 +147,34 @@ Live deployment: [https://incog-production-591c.up.railway.app](https://incog-pr
 
 Same app: `npm start`, health check `/health`. Deploys from `main`.
 
-### Bring your own domain
+### How nowgg.fun is run (copy this)
 
-Incog can answer on **your** hostname. That new URL is the same proxy.
+[nowgg.fun](https://nowgg.fun/) is Frogie’s Arcade, not Railway:
 
-You cannot get a unique `something.com` without paying a registrar (or a rare free TLD with a waitlist). You *can* get a **free subdomain** that does not say Railway or GitHub in the address bar:
+- Cloudflare nameservers (`jeff.ns.cloudflare.com` / `nelci.ns.cloudflare.com`)
+- A record to a VPS (`69.164.251.212`, `use.frogiesarcade.win` on Interserver)
+- Caddy terminates HTTPS (`via: 1.1 Caddy`) and reverse-proxies Express
+- Let’s Encrypt HTTP-01 on a **static IP** — no Railway CNAME/TXT
 
-1. Create a free hostname at [Dynu](https://www.dynu.com/en-US/ControlPanel/AddDDNS). Live hostname: `incog.freeddns.org`.
-2. Free accounts get **4 custom records**. Delete leftover A/AAAA or TXT will ask for a paid membership.
-3. CNAME (blank node) → `2q9gavwd.up.railway.app` and TXT `_railway-verify` → `railway-verify=bd987f426bf453b447c1253ca856a2ca53310b0c5a9cb5314538370feae76635`.
+Do **not** point Incog at Frogie’s IP. Copy the pattern: Cloudflare (or Caddy) owns HTTPS; the Node proxy sits behind it.
 
-`incog.freeddns.org` is attached on Railway (one custom domain on the current plan).
-
-If `RAILWAY_TOKEN` or `RAILWAY_PROJECT_TOKEN` is set on the service, Incog registers the hostname. Otherwise:
+**Same stack on a VPS** (`docker-compose.yml` + `deploy/Caddyfile`):
 
 ```bash
-railway domain incog.freeddns.org --service incog
+INCOG_DOMAIN=incog.example.com docker compose up -d --build
 ```
 
-Override the CNAME target with `INCOG_CNAME_TARGET` if you host Incog somewhere else.
+Point an A record at that machine. Caddy gets the certificate.
+
+**Same idea while Incog stays on Railway:** deploy `deploy/cf-worker.js` with Wrangler. Cloudflare issues HTTPS and rewrites `Host` to `incog-production-591c.up.railway.app`, so you never see Railway’s train 404.
+
+```bash
+cd deploy && npx wrangler deploy
+```
+
+That gives a `*.workers.dev` URL. To keep `incog.freeddns.org`, add that hostname as a Cloudflare zone, put Cloudflare **NS** records on Dynu (delete the Railway CNAME), and attach the Worker route.
+
+Dynu CNAME → Railway still needs a TXT and will 404 until both records match. That is why nowgg.fun does not do it that way.
 
 ### Docker / VPS
 
@@ -174,7 +183,7 @@ docker build -t incog .
 docker run --rm -p 3000:3000 incog
 ```
 
-Or without Docker: `npm ci && npm start`. Listen address is `0.0.0.0` (`HOST`) and `PORT` (Render/Railway/Fly inject this). Put TLS on the edge (Caddy, nginx, the platform) and forward WebSocket upgrades for `/wisp/`.
+Or without Docker: `npm ci && npm start`. Listen address is `0.0.0.0` (`HOST`) and `PORT`. Forward WebSocket upgrades for `/wisp/`.
 
 ## License
 
