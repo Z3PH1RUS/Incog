@@ -447,6 +447,17 @@ iframe {
 
 .byod-card p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
 
+.byod-steps {
+  margin: 0 0 14px;
+  padding-left: 1.2rem;
+  color: var(--muted);
+  font-size: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.byod-steps a { color: var(--accent); }
+
 .dns-row {
   display: flex;
   flex-wrap: wrap;

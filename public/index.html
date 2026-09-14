@@ -95,17 +95,22 @@
             </ul>
             <article class="byod-card" id="byod-card">
               <p class="badge">BYOD is here</p>
-              <h2>Bring your own domain</h2>
-              <p>Point a hostname at Incog and that URL becomes another door into the same proxy. This is not Frogie’s arcade — CNAME <em>this</em> host.</p>
+              <h2>Bring your own hostname</h2>
+              <p>You cannot mint a brand-new <code>.com</code> for free. Every public URL is a name under <em>someone’s</em> domain. What you can do without buying anything is take a <strong>free subdomain</strong> so the address bar is not Railway, GitHub, or Vercel.</p>
+              <ol class="byod-steps">
+                <li>Create a free hostname at <a href="https://freedns.afraid.org/" rel="noopener noreferrer">FreeDNS</a> (CNAME records). Skip DuckDNS — it only takes an IP, and Railway’s IP is not stable.</li>
+                <li>CNAME that hostname to the target below (examples look like <code>incog.mooo.com</code>, not <code>*.up.railway.app</code>).</li>
+                <li>Paste it here and Attach so HTTPS can be issued.</li>
+              </ol>
               <div class="dns-row">
                 <span class="dns-type">CNAME</span>
                 <code id="byod-cname">incog-production-591c.up.railway.app</code>
                 <button type="button" class="ghost" id="byod-copy">Copy</button>
               </div>
-              <p class="hint">Apex (<code>example.com</code>): ALIAS/ANAME or Cloudflare CNAME flattening. Railway has no stable A record, so do not point at a random IP.</p>
+              <p class="hint">Apex paid domains still need ALIAS/ANAME or Cloudflare flattening. Do not point at Frogie or a random A record.</p>
               <form class="byod-form" id="byod-form">
                 <label class="sr-only" for="byod-domain">Your domain</label>
-                <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="proxy.example.com" autocomplete="off">
+                <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.mooo.com" autocomplete="off">
                 <button type="submit" class="go">Attach</button>
               </form>
               <p class="hint" id="byod-status"></p>
