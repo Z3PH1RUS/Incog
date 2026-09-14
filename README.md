@@ -153,16 +153,16 @@ Incog can answer on **your** hostname. That new URL is the same proxy.
 
 You cannot get a unique `something.com` without paying a registrar (or a rare free TLD with a waitlist). You *can* get a **free subdomain** that does not say Railway or GitHub in the address bar:
 
-1. Create a free hostname at [Dynu](https://www.dynu.com/en-US/ControlPanel/AddDDNS). Recommended: `incog.dynu.net`.
-2. In Dynu → that hostname → **DNS Records**, delete the A/AAAA rows.
-3. Add CNAME (blank node) → `qom0vyax.up.railway.app` and TXT `_railway-verify` → `railway-verify=f8ea0d87f6ca3754935c77e9cc9bb801bf30bdd15e2cbc29f7495c7e544ce019`.
+1. Create a free hostname at [Dynu](https://www.dynu.com/en-US/ControlPanel/AddDDNS). Live hostname: `incog.freeddns.org`.
+2. Free accounts get **4 custom records**. Delete leftover A/AAAA or TXT will ask for a paid membership.
+3. CNAME (blank node) → `2q9gavwd.up.railway.app` and TXT `_railway-verify` → `railway-verify=bd987f426bf453b447c1253ca856a2ca53310b0c5a9cb5314538370feae76635`.
 
-`incog.dynu.net` is already attached on Railway (one custom domain on the current plan). FreeDNS shared domains block CNAME and will not work here.
+`incog.freeddns.org` is attached on Railway (one custom domain on the current plan).
 
 If `RAILWAY_TOKEN` or `RAILWAY_PROJECT_TOKEN` is set on the service, Incog registers the hostname. Otherwise:
 
 ```bash
-railway domain incog.dynu.net --service incog
+railway domain incog.freeddns.org --service incog
 ```
 
 Override the CNAME target with `INCOG_CNAME_TARGET` if you host Incog somewhere else.

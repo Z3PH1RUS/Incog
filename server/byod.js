@@ -12,11 +12,11 @@ export const CNAME_TARGET = (
   .toLowerCase();
 
 const DEFAULT_HINTS = {
-  "incog.dynu.net": {
-    cname: "qom0vyax.up.railway.app",
+  "incog.freeddns.org": {
+    cname: "2q9gavwd.up.railway.app",
     txtName: "_railway-verify",
-    txtHost: "_railway-verify.incog.dynu.net",
-    txt: "railway-verify=f8ea0d87f6ca3754935c77e9cc9bb801bf30bdd15e2cbc29f7495c7e544ce019",
+    txtHost: "_railway-verify.incog.freeddns.org",
+    txt: "railway-verify=bd987f426bf453b447c1253ca856a2ca53310b0c5a9cb5314538370feae76635",
   },
 };
 
@@ -146,7 +146,7 @@ export function byodSetupMessage({
     return `https://${domain} is live.`;
   }
   if (dynu && records?.cname && records?.txt) {
-    return `On Dynu open ${domain} → DNS Records. Delete the A/AAAA row. Add CNAME with a blank node name → ${records.cname}. Add TXT node ${records.txtName} → ${records.txt}. Wait a minute, then open https://${domain}.`;
+    return `On Dynu open ${domain} → DNS Records. Free accounts get 4 records — delete A/AAAA (and extras) first or TXT asks for membership. Keep one CNAME (blank node) → ${records.cname}. Then add TXT node ${records.txtName} → ${records.txt}.`;
   }
   if (freedns && records?.cname && records?.txt) {
     return `FreeDNS will not accept a CNAME on this hostname. Use Dynu instead: create incog.dynu.net and set CNAME → ${records.cname} plus TXT ${records.txtName} → ${records.txt}.`;

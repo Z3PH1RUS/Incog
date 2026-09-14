@@ -16,19 +16,19 @@ describe("parseByodDomain", () => {
 });
 
 describe("byod setup copy", () => {
-  it("gives Dynu DNS Record steps for incog.dynu.net", () => {
-    assert.equal(isDynuHost("incog.dynu.net"), true);
-    const records = byodHints()["incog.dynu.net"];
+  it("gives Dynu DNS Record steps for incog.freeddns.org", () => {
+    assert.equal(isDynuHost("incog.freeddns.org"), true);
+    const records = byodHints()["incog.freeddns.org"];
     const message = byodSetupMessage({
-      domain: "incog.dynu.net",
+      domain: "incog.freeddns.org",
       attached: true,
       verified: false,
       dynu: true,
       records,
     });
     assert.match(message, /Dynu/);
-    assert.match(message, /qom0vyax\.up\.railway\.app/);
+    assert.match(message, /2q9gavwd\.up\.railway\.app/);
     assert.match(message, /_railway-verify/);
-    assert.match(message, /Delete the A/);
+    assert.match(message, /4 records/);
   });
 });

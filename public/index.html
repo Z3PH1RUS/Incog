@@ -98,20 +98,20 @@
               <h2>Bring your own hostname</h2>
               <p>You cannot mint a brand-new <code>.com</code> for free. Every public URL is a name under <em>someone’s</em> domain. What you can do without buying anything is take a <strong>free subdomain</strong> so the address bar is not Railway, GitHub, or Vercel.</p>
               <ol class="byod-steps">
-                <li>Create a free <a href="https://www.dynu.com/en-US/ControlPanel/AddDDNS" rel="noopener noreferrer">Dynu</a> account. Add DDNS: host <code>incog</code>, domain <code>dynu.net</code> → <code>incog.dynu.net</code>.</li>
-                <li>Open that hostname → <strong>DNS Records</strong>. Delete the A and AAAA rows Dynu created.</li>
-                <li>Add the CNAME and TXT below. Node name for CNAME is blank. Node name for TXT is <code>_railway-verify</code>.</li>
+                <li>You already have the CNAME on <code>incog.freeddns.org</code>. Railway still needs a TXT to issue HTTPS — CNAME alone stays on the train page.</li>
+                <li>Dynu free allows <strong>4 records</strong>. “Better membership” for TXT means those slots are full. Delete the leftover <strong>A</strong> and <strong>AAAA</strong> rows.</li>
+                <li>Edit the CNAME so it is exactly the target below (not the old <code>qom0vyax</code> host). Then add TXT.</li>
               </ol>
-              <p class="byod-callout"><code>incog.dynu.net</code> is already attached on Railway. FreeDNS cannot do this — Dynu can. After the two records save, wait a minute and open <a href="https://incog.dynu.net">https://incog.dynu.net</a>.</p>
+              <p class="byod-callout">TXT is free on Dynu. You do not need to pay if you delete unused records first, then add one TXT.</p>
               <form class="byod-form" id="byod-form">
                 <label class="sr-only" for="byod-domain">Your domain</label>
-                <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.dynu.net" autocomplete="off">
+                <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.freeddns.org" autocomplete="off">
                 <button type="submit" class="go">Attach</button>
               </form>
               <div id="byod-records">
                 <div class="dns-row dns-row-primary">
                   <span class="dns-type">CNAME</span>
-                  <code id="byod-cname">qom0vyax.up.railway.app</code>
+                  <code id="byod-cname">2q9gavwd.up.railway.app</code>
                   <button type="button" class="ghost" id="byod-copy">Copy CNAME</button>
                 </div>
                 <div class="dns-row">
@@ -122,10 +122,10 @@
                 <div class="dns-row dns-row-stack">
                   <span class="dns-type">TXT value</span>
                   <button type="button" class="ghost" id="byod-copy-txt">Copy TXT</button>
-                  <code id="byod-txt">railway-verify=f8ea0d87f6ca3754935c77e9cc9bb801bf30bdd15e2cbc29f7495c7e544ce019</code>
+                  <code id="byod-txt">railway-verify=bd987f426bf453b447c1253ca856a2ca53310b0c5a9cb5314538370feae76635</code>
                 </div>
               </div>
-              <p class="hint">If Dynu refuses CNAME on the hostname itself, say so — we can switch the Railway name to <code>www.incog.dynu.net</code>.</p>
+              <p class="hint">After both records save, wait a minute and open <a href="https://incog.freeddns.org">https://incog.freeddns.org</a>.</p>
               <p class="hint" id="byod-status"></p>
             </article>
             <div class="chips" id="popular">
