@@ -30,6 +30,12 @@ describe("standalone website server", () => {
 
     const sj = await fetch(`${base}/scram/scramjet.all.js`);
     assert.equal(sj.status, 200);
+
+    const byod = await fetch(`${base}/api/byod`);
+    assert.equal(byod.status, 200);
+    const byodBody = await byod.json();
+    assert.equal(byodBody.ok, true);
+    assert.ok(byodBody.cname);
   });
 
   after(

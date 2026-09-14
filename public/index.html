@@ -48,6 +48,9 @@
             <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/>
           </svg>
         </button>
+        <button type="button" class="icon-btn" id="byod-toggle">
+          BYOD
+        </button>
         <button type="button" class="icon-btn" id="settings-toggle" aria-expanded="false" aria-controls="settings-panel">
           Settings
         </button>
@@ -90,6 +93,23 @@
               <li>Private, loopback, and cloud-metadata hosts are blocked on the Wisp server.</li>
               <li>Recents stay in this browser unless you enable Forget me on exit.</li>
             </ul>
+            <article class="byod-card" id="byod-card">
+              <p class="badge">BYOD is here</p>
+              <h2>Bring your own domain</h2>
+              <p>Point a hostname at Incog and that URL becomes another door into the same proxy. This is not Frogie’s arcade — CNAME <em>this</em> host.</p>
+              <div class="dns-row">
+                <span class="dns-type">CNAME</span>
+                <code id="byod-cname">incog-production-591c.up.railway.app</code>
+                <button type="button" class="ghost" id="byod-copy">Copy</button>
+              </div>
+              <p class="hint">Apex (<code>example.com</code>): ALIAS/ANAME or Cloudflare CNAME flattening. Railway has no stable A record, so do not point at a random IP.</p>
+              <form class="byod-form" id="byod-form">
+                <label class="sr-only" for="byod-domain">Your domain</label>
+                <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="proxy.example.com" autocomplete="off">
+                <button type="submit" class="go">Attach</button>
+              </form>
+              <p class="hint" id="byod-status"></p>
+            </article>
             <div class="chips" id="popular">
               <button type="button" class="chip" data-url="https://example.com">example.com</button>
               <button type="button" class="chip" data-url="https://wikipedia.org">wikipedia.org</button>

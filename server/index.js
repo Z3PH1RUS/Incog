@@ -7,6 +7,13 @@ import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 import { scramjetPath } from "@mercuryworkshop/scramjet/path";
 import { server as wisp } from "@mercuryworkshop/wisp-js/server";
+import {
+  CNAME_TARGET,
+  attachRailwayDomain,
+  domainPointsAtTarget,
+  parseByodDomain,
+  railwayConfig,
+} from "./byod.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, "../public");
@@ -31,6 +38,7 @@ wisp.options.hostname_blacklist = [
 
 const app = express();
 app.disable("x-powered-by");
+app.set("trust proxy", 1);
 
 app.use((req, res, next) => {
   res.setHeader("referrer-policy", "no-referrer");
@@ -48,7 +56,51 @@ app.get("/health", (_req, res) => {
     name: "incog",
     engines: ["ultraviolet", "scramjet"],
     transport: "wisp+epoxy",
+    byod: {
+      cname: CNAME_TARGET,
+      attach: Boolean(railwayConfig()),
+    },
   });
+});
+
+app.get("/api/byod", (_req, res) => {
+  res.json({
+    ok: true,
+    cname: CNAME_TARGET,
+    attach: Boolean(railwayConfig()),
+    records: [
+      { type: "CNAME", host: "@ or a subdomain", value: CNAME_TARGET },
+    ],
+  });
+});
+
+app.post("/api/byod", express.json({ limit: "8kb" }), async (req, res) => {
+  try {
+    const domain = parseByodDomain(req.body?.domain);
+    const pointed = await domainPointsAtTarget(domain);
+    if (!pointed) {
+      res.status(400).json({
+        ok: false,
+        error: `DNS does not point here yet. Add a CNAME to ${CNAME_TARGET}.`,
+      });
+      return;
+    }
+    const attach = await attachRailwayDomain(domain);
+    res.json({
+      ok: true,
+      domain,
+      dns: pointed,
+      attached: attach.attached,
+      message: attach.attached
+        ? `https://${domain} is attached. TLS can take a minute.`
+        : `DNS looks good. HTTPS needs this domain added on Railway: railway domain ${domain}`,
+    });
+  } catch (error) {
+    res.status(400).json({
+      ok: false,
+      error: error.message || "Could not attach that domain.",
+    });
+  }
 });
 
 app.get("/sw.js", (_req, res) => {

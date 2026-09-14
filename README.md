@@ -147,6 +147,20 @@ Live deployment: [https://incog-production-591c.up.railway.app](https://incog-pr
 
 Same app: `npm start`, health check `/health`. Deploys from `main`.
 
+### Bring your own domain
+
+Incog can answer on **your** hostname. That new URL is the same proxy, not a shortener and not Frogie’s arcade.
+
+1. Create a **CNAME** for `@` or a subdomain (`proxy`) to `incog-production-591c.up.railway.app`.
+2. Apex domains need ALIAS/ANAME or Cloudflare CNAME flattening. There is no stable A record IP on Railway — do not point at `69.164.251.210` or `vps.frogiesarcade.win`.
+3. Open Incog → **BYOD**, enter the hostname, and Attach. If `RAILWAY_TOKEN` is set on the service, Incog registers the domain for HTTPS. Otherwise run:
+
+```bash
+railway domain your.domain --service incog
+```
+
+Override the CNAME target with `INCOG_CNAME_TARGET` if you host Incog somewhere else.
+
 ### Docker / VPS
 
 ```bash
