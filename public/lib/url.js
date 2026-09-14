@@ -34,6 +34,19 @@ export function normalizeInput(raw, { forceHttps = false, privacy = false } = {}
     throw new Error("Only http and https URLs can be opened.");
   }
 
+  const host = parsed.hostname;
+  const isIpv4 = /^\d{1,3}(?:\.\d{1,3}){3}$/.test(host);
+  const isIpv6 = host.includes(":");
+  if (
+    host &&
+    !host.includes(".") &&
+    !isIpv4 &&
+    !isIpv6 &&
+    host.toLowerCase() !== "localhost"
+  ) {
+    parsed.hostname = `${host}.com`;
+  }
+
   if (forceHttps && parsed.protocol === "http:") {
     parsed.protocol = "https:";
   }

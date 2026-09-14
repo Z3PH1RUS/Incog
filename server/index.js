@@ -16,6 +16,9 @@ const thisFile = fileURLToPath(import.meta.url);
 
 wisp.options.allow_private_ips = false;
 wisp.options.allow_loopback_ips = false;
+// Railway (and similar PaaS) often have no IPv6 egress. Prefer A records so
+// TLS to youtube.com / similar hosts does not EOF on a dead AAAA path.
+wisp.options.dns_result_order = "ipv4first";
 wisp.options.hostname_blacklist = [
   /^(.*\.)?localhost$/i,
   /^(.*\.)?local$/i,

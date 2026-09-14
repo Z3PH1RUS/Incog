@@ -8,6 +8,12 @@ describe("normalizeInput", () => {
     assert.equal(normalizeInput("https://example.com/path"), "https://example.com/path");
   });
 
+  it("appends .com to a single-label host like youtube", () => {
+    assert.equal(normalizeInput("youtube"), "https://youtube.com/");
+    assert.equal(normalizeInput("https://youtube/"), "https://youtube.com/");
+    assert.equal(normalizeInput("https://youtube.com/watch?v=1"), "https://youtube.com/watch?v=1");
+  });
+
   it("rejects dangerous schemes", () => {
     assert.throws(() => normalizeInput("file:///etc/passwd"));
     assert.throws(() => normalizeInput("javascript:alert(1)"));
