@@ -24,6 +24,9 @@ describe("standalone website server", () => {
     assert.match(html, /Incog/);
     assert.match(html, /ultraviolet/i);
     assert.match(html, /\/app\.js/);
+    assert.match(html, /Copy IP/);
+    assert.match(html, /invalid IP/);
+    assert.match(html, /69\.46\.46\.106/);
 
     const uv = await fetch(`${base}/uv/uv.bundle.js`);
     assert.equal(uv.status, 200);
@@ -37,6 +40,16 @@ describe("standalone website server", () => {
     assert.equal(byodBody.ok, true);
     assert.ok(byodBody.cname);
     assert.ok(Array.isArray(byodBody.a));
+
+    const attach = await fetch(`${base}/api/byod`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ domain: "example.com" }),
+    });
+    assert.equal(attach.status, 400);
+    const attachBody = await attach.json();
+    assert.match(attachBody.error, /numbers only/);
+    assert.match(attachBody.error, /not an IP/);
   });
 
   after(

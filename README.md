@@ -154,7 +154,7 @@ Incog can answer on **your** hostname. That new URL is the same proxy.
 You cannot get a unique `something.com` without paying a registrar (or a rare free TLD with a waitlist). You *can* get a **free subdomain** that does not say Railway or GitHub in the address bar:
 
 1. Sign up at [FreeDNS](https://freedns.afraid.org/).
-2. Free plans often show **CNAME is restricted**. Create an **A** record instead, using the IPv4 shown on Incog → BYOD (today that is resolved live from `incog-production-591c.up.railway.app`). Do not use Frogie’s `69.164.251.210`.
+2. Free plans often show **CNAME is restricted**. Create an **A** record. Destination must be an IPv4 (four numbers with dots) from Incog → BYOD, currently resolved live from `incog-production-591c.up.railway.app`. If FreeDNS says that hostname is an invalid IP, you pasted the name into Destination — paste the IPv4 instead. Do not use Frogie’s `69.164.251.210`.
 3. If the domain allows CNAME, point it at `incog-production-591c.up.railway.app`.
 4. Open Incog → **BYOD**, paste the hostname, Attach.
 

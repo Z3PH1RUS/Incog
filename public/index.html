@@ -99,20 +99,25 @@
               <p>You cannot mint a brand-new <code>.com</code> for free. Every public URL is a name under <em>someone’s</em> domain. What you can do without buying anything is take a <strong>free subdomain</strong> so the address bar is not Railway, GitHub, or Vercel.</p>
               <ol class="byod-steps">
                 <li>Create a free hostname at <a href="https://freedns.afraid.org/" rel="noopener noreferrer">FreeDNS</a>.</li>
-                <li>If it says <strong>CNAME is restricted</strong>, that is the free plan. Create an <strong>A</strong> record instead, using the IPv4 below (not Frogie’s IP).</li>
-                <li>If CNAME is allowed, point it at the CNAME target. Then paste the hostname here and Attach.</li>
+                <li>Type must be <strong>A</strong>. The Destination field is an IPv4 — four numbers with dots, like the box below. It will reject a hostname.</li>
+                <li>Paste your new name here (for example <code>incog.mooo.com</code>) and Attach.</li>
               </ol>
-              <div class="dns-row">
-                <span class="dns-type">CNAME</span>
-                <code id="byod-cname">incog-production-591c.up.railway.app</code>
-                <button type="button" class="ghost" id="byod-copy">Copy</button>
+              <p class="byod-callout">If FreeDNS says <code>incog-production-591c.up.railway.app</code> is an invalid IP, you put the Railway name in Destination. Put the <strong>A</strong> IPv4 there instead.</p>
+              <div class="dns-row dns-row-primary" id="byod-a-row">
+                <span class="dns-type">A · Destination</span>
+                <code id="byod-a">69.46.46.106</code>
+                <button type="button" class="ghost" id="byod-copy-a">Copy IP</button>
               </div>
-              <div class="dns-row" id="byod-a-row">
-                <span class="dns-type">A</span>
-                <code id="byod-a">checking…</code>
-                <button type="button" class="ghost" id="byod-copy-a">Copy</button>
-              </div>
-              <p class="hint">Railway IPs can change. Reload this page before you set the A record. Dynu free hostnames can still use CNAME if you prefer that.</p>
+              <p class="hint">That value is numbers only. Do not paste <code>incog-production-591c.up.railway.app</code> into Destination. Railway IPs can change — reload this page before you save DNS.</p>
+              <details class="byod-cname-alt">
+                <summary>CNAME (only if your DNS host allows it)</summary>
+                <div class="dns-row">
+                  <span class="dns-type">CNAME</span>
+                  <code id="byod-cname">incog-production-591c.up.railway.app</code>
+                  <button type="button" class="ghost" id="byod-copy">Copy hostname</button>
+                </div>
+                <p class="hint">FreeDNS shared domains block CNAME. Dynu free hostnames can still use this.</p>
+              </details>
               <form class="byod-form" id="byod-form">
                 <label class="sr-only" for="byod-domain">Your domain</label>
                 <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.mooo.com" autocomplete="off">

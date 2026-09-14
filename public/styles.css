@@ -458,12 +458,45 @@ iframe {
 
 .byod-steps a { color: var(--accent); }
 
+.byod-callout {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line-strong));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg));
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.byod-callout code {
+  font: 500 12px/1.4 ui-monospace, "Cascadia Code", monospace;
+}
+
 .dns-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   margin: 0 0 10px;
+}
+
+.dns-row-primary {
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.byod-cname-alt {
+  margin: 4px 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.byod-cname-alt summary {
+  cursor: pointer;
+  margin-bottom: 8px;
 }
 
 .dns-type {

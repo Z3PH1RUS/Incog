@@ -351,7 +351,7 @@ byodCopy?.addEventListener("click", async () => {
   if (!value) return;
   try {
     await navigator.clipboard.writeText(value);
-    toastMsg("CNAME target copied");
+    toastMsg("CNAME hostname copied — do not paste this into an A record");
   } catch {
     toastMsg(value);
   }
@@ -362,7 +362,7 @@ document.getElementById("byod-copy-a")?.addEventListener("click", async () => {
   if (!value || value === "checking…" || value === "unavailable") return;
   try {
     await navigator.clipboard.writeText(value);
-    toastMsg("A record IP copied");
+    toastMsg("IPv4 copied — paste this into FreeDNS Destination");
   } catch {
     toastMsg(value);
   }

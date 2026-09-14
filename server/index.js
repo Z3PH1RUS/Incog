@@ -83,9 +83,13 @@ app.post("/api/byod", express.json({ limit: "8kb" }), async (req, res) => {
     const domain = parseByodDomain(req.body?.domain);
     const pointed = await domainPointsAtTarget(domain);
     if (!pointed) {
+      const ips = await targetARecords();
+      const ipHint = ips.length
+        ? ips.join(" or ")
+        : "the IPv4 shown on this page";
       res.status(400).json({
         ok: false,
-        error: `DNS does not point here yet. FreeDNS free plans often block CNAME — add an A record to ${CNAME_TARGET}'s current IPv4 instead.`,
+        error: `DNS does not point here yet. On FreeDNS, Type = A and Destination = ${ipHint} (numbers only). Do not paste ${CNAME_TARGET} into Destination — that hostname is not an IP.`,
       });
       return;
     }
