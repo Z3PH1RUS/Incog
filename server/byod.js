@@ -72,6 +72,15 @@ export async function isAfraidOrgHost(domain) {
   }
 }
 
+export async function currentCname(domain) {
+  try {
+    const names = await resolveCname(domain);
+    return names.map(stripDot)[0] || "";
+  } catch {
+    return "";
+  }
+}
+
 export async function domainPointsAtTarget(domain, target = CNAME_TARGET) {
   const want = stripDot(target);
   try {
@@ -141,12 +150,18 @@ export function byodSetupMessage({
   records,
   freedns,
   dynu,
+  seenCname,
 }) {
   if (verified) {
     return `https://${domain} is live.`;
   }
   if (dynu && records?.cname && records?.txt) {
-    return `On Dynu open ${domain} → DNS Records. Free accounts get 4 records — delete A/AAAA (and extras) first or TXT asks for membership. Keep one CNAME (blank node) → ${records.cname}. Then add TXT node ${records.txtName} → ${records.txt}.`;
+    const stale =
+      seenCname &&
+      seenCname !== records.cname
+        ? ` The train page is because CNAME is still ${seenCname} — change it to ${records.cname}.`
+        : "";
+    return `On Dynu open ${domain} → DNS Records.${stale} Free accounts get 4 records — delete A/AAAA first or TXT asks for membership. CNAME (blank node) must be ${records.cname}. Then TXT node ${records.txtName} → ${records.txt}.`;
   }
   if (freedns && records?.cname && records?.txt) {
     return `FreeDNS will not accept a CNAME on this hostname. Use Dynu instead: create incog.freeddns.org and set CNAME → ${records.cname} plus TXT ${records.txtName} → ${records.txt}.`;

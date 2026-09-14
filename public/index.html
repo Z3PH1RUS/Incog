@@ -98,11 +98,11 @@
               <h2>Bring your own hostname</h2>
               <p>You cannot mint a brand-new <code>.com</code> for free. Every public URL is a name under <em>someone’s</em> domain. What you can do without buying anything is take a <strong>free subdomain</strong> so the address bar is not Railway, GitHub, or Vercel.</p>
               <ol class="byod-steps">
-                <li>You already have the CNAME on <code>incog.freeddns.org</code>. Railway still needs a TXT to issue HTTPS — CNAME alone stays on the train page.</li>
-                <li>Dynu free allows <strong>4 records</strong>. “Better membership” for TXT means those slots are full. Delete the leftover <strong>A</strong> and <strong>AAAA</strong> rows.</li>
-                <li>Edit the CNAME so it is exactly the target below (not the old <code>qom0vyax</code> host). Then add TXT.</li>
+                <li>The train page means Railway does not accept this hostname yet. Your CNAME still says <code>qom0vyax.up.railway.app</code> — that host was for the old name and is dead.</li>
+                <li>Edit the CNAME to <code>2q9gavwd.up.railway.app</code> exactly. Then add the TXT below.</li>
+                <li>If TXT asks for membership, delete leftover A/AAAA first. Free Dynu allows 4 records.</li>
               </ol>
-              <p class="byod-callout">TXT is free on Dynu. You do not need to pay if you delete unused records first, then add one TXT.</p>
+              <p class="byod-callout">Do not leave the CNAME on <code>qom0vyax</code>. That is why you still see the train.</p>
               <form class="byod-form" id="byod-form">
                 <label class="sr-only" for="byod-domain">Your domain</label>
                 <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.freeddns.org" autocomplete="off">

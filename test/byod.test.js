@@ -24,11 +24,13 @@ describe("byod setup copy", () => {
       attached: true,
       verified: false,
       dynu: true,
+      seenCname: "qom0vyax.up.railway.app",
       records,
     });
     assert.match(message, /Dynu/);
     assert.match(message, /2q9gavwd\.up\.railway\.app/);
+    assert.match(message, /qom0vyax/);
+    assert.match(message, /train page/);
     assert.match(message, /_railway-verify/);
-    assert.match(message, /4 records/);
   });
 });
