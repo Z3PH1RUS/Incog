@@ -14,6 +14,7 @@ import {
   byodSetupMessage,
   domainPointsAtTarget,
   isAfraidOrgHost,
+  isDynuHost,
   parseByodDomain,
   railwayConfig,
   recordsForDomain,
@@ -94,6 +95,7 @@ app.post("/api/byod", express.json({ limit: "8kb" }), async (req, res) => {
     const dns = await domainPointsAtTarget(domain);
     const train404 = dns === "a";
     const freedns = await isAfraidOrgHost(domain);
+    const dynu = isDynuHost(domain);
     const attach = await attachRailwayDomain(domain);
     const records = attach.records || recordsForDomain(domain);
     const verified = Boolean(attach.verified);
@@ -103,6 +105,7 @@ app.post("/api/byod", express.json({ limit: "8kb" }), async (req, res) => {
       dns,
       train404,
       freedns,
+      dynu,
       attached: attach.attached,
       verified,
       records,
@@ -113,6 +116,7 @@ app.post("/api/byod", express.json({ limit: "8kb" }), async (req, res) => {
         train404,
         records,
         freedns,
+        dynu,
       }),
     });
   } catch (error) {

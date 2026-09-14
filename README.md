@@ -153,16 +153,16 @@ Incog can answer on **your** hostname. That new URL is the same proxy.
 
 You cannot get a unique `something.com` without paying a registrar (or a rare free TLD with a waitlist). You *can* get a **free subdomain** that does not say Railway or GitHub in the address bar:
 
-1. FreeDNS shared domains (including `ignorelist.com`) **block CNAME**. Railway still requires a CNAME, so an A record will keep showing Railway’s train 404.
-2. To keep `incog.ignorelist.com`, add **NS** records on FreeDNS pointing at Cloudflare nameservers, then in Cloudflare (DNS only / grey cloud) set CNAME `@` → `3j6hiavn.up.railway.app` and TXT `_railway-verify` → `railway-verify=06f85953454d1d0fe4ce86fb8af92dd9055a065f5a204fa2527f0b777d4cd598`.
-3. Or create a hostname at [Dynu](https://www.dynu.com/en-US/ControlPanel/AddDDNS) (CNAME is allowed), paste it into Incog → **BYOD**, Attach, and use the CNAME + TXT it shows.
+1. Create a free hostname at [Dynu](https://www.dynu.com/en-US/ControlPanel/AddDDNS). Recommended: `incog.dynu.net`.
+2. In Dynu → that hostname → **DNS Records**, delete the A/AAAA rows.
+3. Add CNAME (blank node) → `qom0vyax.up.railway.app` and TXT `_railway-verify` → `railway-verify=f8ea0d87f6ca3754935c77e9cc9bb801bf30bdd15e2cbc29f7495c7e544ce019`.
 
-`incog.ignorelist.com` is already attached on Railway. FreeDNS will not take that CNAME until you NS-delegate the name.
+`incog.dynu.net` is already attached on Railway (one custom domain on the current plan). FreeDNS shared domains block CNAME and will not work here.
 
 If `RAILWAY_TOKEN` or `RAILWAY_PROJECT_TOKEN` is set on the service, Incog registers the hostname. Otherwise:
 
 ```bash
-railway domain incog.ignorelist.com --service incog
+railway domain incog.dynu.net --service incog
 ```
 
 Override the CNAME target with `INCOG_CNAME_TARGET` if you host Incog somewhere else.

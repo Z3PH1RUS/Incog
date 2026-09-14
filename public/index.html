@@ -98,26 +98,20 @@
               <h2>Bring your own hostname</h2>
               <p>You cannot mint a brand-new <code>.com</code> for free. Every public URL is a name under <em>someone’s</em> domain. What you can do without buying anything is take a <strong>free subdomain</strong> so the address bar is not Railway, GitHub, or Vercel.</p>
               <ol class="byod-steps">
-                <li>FreeDNS shared domains block CNAME. Railway still needs a CNAME, so do not put an A record on FreeDNS.</li>
-                <li>To keep a name like <code>incog.ignorelist.com</code>, delegate it with <strong>NS</strong> records to Cloudflare, then add the CNAME and TXT there.</li>
-                <li>Or skip FreeDNS and create a hostname at <a href="https://www.dynu.com/en-US/ControlPanel/AddDDNS" rel="noopener noreferrer">Dynu</a>, which allows CNAME.</li>
+                <li>Create a free <a href="https://www.dynu.com/en-US/ControlPanel/AddDDNS" rel="noopener noreferrer">Dynu</a> account. Add DDNS: host <code>incog</code>, domain <code>dynu.net</code> → <code>incog.dynu.net</code>.</li>
+                <li>Open that hostname → <strong>DNS Records</strong>. Delete the A and AAAA rows Dynu created.</li>
+                <li>Add the CNAME and TXT below. Node name for CNAME is blank. Node name for TXT is <code>_railway-verify</code>.</li>
               </ol>
-              <p class="byod-callout">That FreeDNS message is a platform limit, not a typo. NS records are allowed. CNAME records are not. Cloudflare (grey cloud / DNS only) can hold the CNAME Railway requires.</p>
-              <ol class="byod-steps">
-                <li>Create a free <a href="https://dash.cloudflare.com/sign-up" rel="noopener noreferrer">Cloudflare</a> account and add site <code>incog.ignorelist.com</code>.</li>
-                <li>Copy the two nameservers Cloudflare shows (they look like <code>ada.ns.cloudflare.com</code>).</li>
-                <li>On FreeDNS, delete the A record. Add two <strong>NS</strong> records for host <code>incog</code>, Destination = those nameservers.</li>
-                <li>In Cloudflare DNS, proxy <strong>off</strong>: CNAME <code>@</code> → the target below, and TXT <code>_railway-verify</code> → the value below.</li>
-              </ol>
+              <p class="byod-callout"><code>incog.dynu.net</code> is already attached on Railway. FreeDNS cannot do this — Dynu can. After the two records save, wait a minute and open <a href="https://incog.dynu.net">https://incog.dynu.net</a>.</p>
               <form class="byod-form" id="byod-form">
                 <label class="sr-only" for="byod-domain">Your domain</label>
-                <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.ignorelist.com" autocomplete="off">
+                <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.dynu.net" autocomplete="off">
                 <button type="submit" class="go">Attach</button>
               </form>
               <div id="byod-records">
                 <div class="dns-row dns-row-primary">
-                  <span class="dns-type">CNAME @</span>
-                  <code id="byod-cname">3j6hiavn.up.railway.app</code>
+                  <span class="dns-type">CNAME</span>
+                  <code id="byod-cname">qom0vyax.up.railway.app</code>
                   <button type="button" class="ghost" id="byod-copy">Copy CNAME</button>
                 </div>
                 <div class="dns-row">
@@ -128,10 +122,10 @@
                 <div class="dns-row dns-row-stack">
                   <span class="dns-type">TXT value</span>
                   <button type="button" class="ghost" id="byod-copy-txt">Copy TXT</button>
-                  <code id="byod-txt">railway-verify=06f85953454d1d0fe4ce86fb8af92dd9055a065f5a204fa2527f0b777d4cd598</code>
+                  <code id="byod-txt">railway-verify=f8ea0d87f6ca3754935c77e9cc9bb801bf30bdd15e2cbc29f7495c7e544ce019</code>
                 </div>
               </div>
-              <p class="hint">In Cloudflare the TXT name is <code>_railway-verify</code> (they append your zone). Leave the orange cloud off so Railway can see the CNAME.</p>
+              <p class="hint">If Dynu refuses CNAME on the hostname itself, say so — we can switch the Railway name to <code>www.incog.dynu.net</code>.</p>
               <p class="hint" id="byod-status"></p>
             </article>
             <div class="chips" id="popular">

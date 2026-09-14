@@ -351,7 +351,7 @@ byodCopy?.addEventListener("click", async () => {
   if (!value) return;
   try {
     await navigator.clipboard.writeText(value);
-    toastMsg("CNAME target copied — paste this in Cloudflare, not FreeDNS");
+    toastMsg("CNAME target copied — paste this into Dynu DNS Records");
   } catch {
     toastMsg(value);
   }
@@ -402,7 +402,7 @@ byodForm?.addEventListener("submit", async (event) => {
     if (!res.ok) throw new Error(body.error || "Could not attach that domain.");
     applyByodRecords(body.records, body.domain);
     byodStatus.textContent = body.message;
-    toastMsg(body.verified ? `https://${body.domain}` : body.freedns ? "Use NS + Cloudflare, not a FreeDNS CNAME" : "Set CNAME + TXT");
+    toastMsg(body.verified ? `https://${body.domain}` : "Set the Dynu CNAME and TXT");
   } catch (error) {
     byodStatus.textContent = error.message;
   }

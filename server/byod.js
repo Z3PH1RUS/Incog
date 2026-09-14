@@ -12,11 +12,11 @@ export const CNAME_TARGET = (
   .toLowerCase();
 
 const DEFAULT_HINTS = {
-  "incog.ignorelist.com": {
-    cname: "3j6hiavn.up.railway.app",
+  "incog.dynu.net": {
+    cname: "qom0vyax.up.railway.app",
     txtName: "_railway-verify",
-    txtHost: "_railway-verify.incog.ignorelist.com",
-    txt: "railway-verify=06f85953454d1d0fe4ce86fb8af92dd9055a065f5a204fa2527f0b777d4cd598",
+    txtHost: "_railway-verify.incog.dynu.net",
+    txt: "railway-verify=f8ea0d87f6ca3754935c77e9cc9bb801bf30bdd15e2cbc29f7495c7e544ce019",
   },
 };
 
@@ -53,6 +53,12 @@ export function parentZone(domain) {
   const parts = stripDot(domain).split(".");
   if (parts.length < 2) return stripDot(domain);
   return parts.slice(-2).join(".");
+}
+
+export function isDynuHost(domain) {
+  return /\.(dynu\.net|dynu\.com|ddnsfree\.com|freeddns\.org|ddnsgeek\.com)$/i.test(
+    stripDot(domain),
+  );
 }
 
 export async function isAfraidOrgHost(domain) {
@@ -134,12 +140,16 @@ export function byodSetupMessage({
   train404,
   records,
   freedns,
+  dynu,
 }) {
   if (verified) {
     return `https://${domain} is live.`;
   }
+  if (dynu && records?.cname && records?.txt) {
+    return `On Dynu open ${domain} → DNS Records. Delete the A/AAAA row. Add CNAME with a blank node name → ${records.cname}. Add TXT node ${records.txtName} → ${records.txt}. Wait a minute, then open https://${domain}.`;
+  }
   if (freedns && records?.cname && records?.txt) {
-    return `FreeDNS will not accept a CNAME on this hostname. Keep ${domain} by delegating NS to Cloudflare, then put CNAME @ → ${records.cname} and TXT ${records.txtName} → ${records.txt} there (DNS only). Or create a Dynu hostname that allows CNAME.`;
+    return `FreeDNS will not accept a CNAME on this hostname. Use Dynu instead: create incog.dynu.net and set CNAME → ${records.cname} plus TXT ${records.txtName} → ${records.txt}.`;
   }
   if (records?.cname && records?.txt) {
     const delA = train404

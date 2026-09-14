@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { CNAME_TARGET, byodHints, byodSetupMessage, parseByodDomain } from "../server/byod.js";
+import { CNAME_TARGET, byodHints, byodSetupMessage, isDynuHost, parseByodDomain } from "../server/byod.js";
 
 describe("parseByodDomain", () => {
   it("accepts a hostname and strips scheme or path", () => {
@@ -16,20 +16,19 @@ describe("parseByodDomain", () => {
 });
 
 describe("byod setup copy", () => {
-  it("tells FreeDNS users to NS-delegate instead of CNAME", () => {
-    const records = byodHints()["incog.ignorelist.com"];
+  it("gives Dynu DNS Record steps for incog.dynu.net", () => {
+    assert.equal(isDynuHost("incog.dynu.net"), true);
+    const records = byodHints()["incog.dynu.net"];
     const message = byodSetupMessage({
-      domain: "incog.ignorelist.com",
+      domain: "incog.dynu.net",
       attached: true,
       verified: false,
-      train404: true,
-      freedns: true,
+      dynu: true,
       records,
     });
-    assert.match(message, /will not accept a CNAME/);
-    assert.match(message, /NS/);
-    assert.match(message, /Cloudflare/);
-    assert.match(message, /3j6hiavn\.up\.railway\.app/);
     assert.match(message, /Dynu/);
+    assert.match(message, /qom0vyax\.up\.railway\.app/);
+    assert.match(message, /_railway-verify/);
+    assert.match(message, /Delete the A/);
   });
 });

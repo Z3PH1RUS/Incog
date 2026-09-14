@@ -24,9 +24,9 @@ describe("standalone website server", () => {
     assert.match(html, /Incog/);
     assert.match(html, /ultraviolet/i);
     assert.match(html, /\/app\.js/);
-    assert.match(html, /NS/);
-    assert.match(html, /Cloudflare/);
-    assert.match(html, /3j6hiavn\.up\.railway\.app/);
+    assert.match(html, /Dynu/);
+    assert.match(html, /incog\.dynu\.net/);
+    assert.match(html, /qom0vyax\.up\.railway\.app/);
     assert.match(html, /_railway-verify/);
 
     const uv = await fetch(`${base}/uv/uv.bundle.js`);
@@ -45,16 +45,15 @@ describe("standalone website server", () => {
     const attach = await fetch(`${base}/api/byod`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ domain: "incog.ignorelist.com" }),
+      body: JSON.stringify({ domain: "incog.dynu.net" }),
     });
     assert.equal(attach.status, 200);
     const attachBody = await attach.json();
     assert.equal(attachBody.ok, true);
-    assert.equal(attachBody.domain, "incog.ignorelist.com");
-    assert.equal(attachBody.records.cname, "3j6hiavn.up.railway.app");
-    assert.match(attachBody.message, /Cloudflare/);
-    assert.match(attachBody.message, /NS/);
-    assert.equal(attachBody.freedns, true);
+    assert.equal(attachBody.domain, "incog.dynu.net");
+    assert.equal(attachBody.records.cname, "qom0vyax.up.railway.app");
+    assert.equal(attachBody.dynu, true);
+    assert.match(attachBody.message, /Dynu/);
   });
 
   after(
