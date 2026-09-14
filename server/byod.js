@@ -149,7 +149,7 @@ export function byodSetupMessage({
     return `On Dynu open ${domain} → DNS Records. Free accounts get 4 records — delete A/AAAA (and extras) first or TXT asks for membership. Keep one CNAME (blank node) → ${records.cname}. Then add TXT node ${records.txtName} → ${records.txt}.`;
   }
   if (freedns && records?.cname && records?.txt) {
-    return `FreeDNS will not accept a CNAME on this hostname. Use Dynu instead: create incog.dynu.net and set CNAME → ${records.cname} plus TXT ${records.txtName} → ${records.txt}.`;
+    return `FreeDNS will not accept a CNAME on this hostname. Use Dynu instead: create incog.freeddns.org and set CNAME → ${records.cname} plus TXT ${records.txtName} → ${records.txt}.`;
   }
   if (records?.cname && records?.txt) {
     const delA = train404
