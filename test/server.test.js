@@ -73,6 +73,12 @@ describe("standalone website server", () => {
     assert.doesNotMatch(missingBody, /You’ve gone/);
     assert.doesNotMatch(missingBody, /Incog — private proxy/);
 
+    const scramjetMissing = await fetch(`${base}/scramjet/https%3A%2F%2Fexample.com%2F`);
+    assert.equal(scramjetMissing.status, 404);
+    const scramjetMissingBody = await scramjetMissing.text();
+    assert.equal(scramjetMissingBody, "Not found");
+    assert.doesNotMatch(scramjetMissingBody, /You’ve gone/);
+
     const uv = await fetch(`${base}/uv/uv.bundle.js`);
     assert.equal(uv.status, 200);
 

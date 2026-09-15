@@ -105,6 +105,15 @@ async function registerSW() {
   }
   await navigator.serviceWorker.register("/sw.js", { scope: "/" });
   await navigator.serviceWorker.ready;
+  if (navigator.serviceWorker.controller) return;
+  await new Promise((resolve) => {
+    const done = () => {
+      navigator.serviceWorker.removeEventListener("controllerchange", done);
+      resolve();
+    };
+    navigator.serviceWorker.addEventListener("controllerchange", done);
+    setTimeout(done, 2500);
+  });
 }
 
 async function ensureTransport() {
@@ -116,12 +125,17 @@ async function ensureTransport() {
   }
 }
 
-function openIdb(name, version) {
+function openExistingIdb(name) {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(name, version);
+    const request = indexedDB.open(name);
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve(request.result);
-    request.onupgradeneeded = () => {};
+    // Opening a missing DB creates version 1 with no stores. Abort that so
+    // ScramjetController.init() can create the real schema instead of
+    // inheriting an empty v1 that can never upgrade.
+    request.onupgradeneeded = (event) => {
+      if (event.oldVersion === 0) event.target.transaction.abort();
+    };
   });
 }
 
@@ -142,14 +156,14 @@ function deleteIdb(name) {
 }
 
 async function resetScramjetDbIfBroken() {
-  let stale = true;
+  let db;
   try {
-    const db = await openIdb("$scramjet", 1);
-    stale = !db.objectStoreNames.contains("config");
-    db.close();
+    db = await openExistingIdb("$scramjet");
   } catch {
-    stale = true;
+    return;
   }
+  const stale = !db.objectStoreNames.contains("config");
+  db.close();
   if (!stale) return;
   await deleteIdb("$scramjet");
 }

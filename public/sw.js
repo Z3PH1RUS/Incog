@@ -8,13 +8,33 @@ const uv = new UVServiceWorker();
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker();
 
-function isScramjetRequest(request) {
+function pathnameOf(request) {
   try {
-    const { pathname } = new URL(request.url);
-    return pathname.startsWith("/scramjet/") || pathname.includes("scramjet.wasm");
+    return new URL(request.url).pathname;
   } catch {
-    return false;
+    return "";
   }
+}
+
+function isScramjetPrefix(request) {
+  return pathnameOf(request).startsWith("/scramjet/");
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function ensureScramjetConfig() {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    try {
+      await scramjet.loadConfig();
+    } catch (error) {
+      console.error("[incog] scramjet loadConfig failed", error);
+    }
+    if (scramjet.config?.prefix) return true;
+    await sleep(50);
+  }
+  return Boolean(scramjet.config?.prefix);
 }
 
 async function handleRequest(event) {
@@ -22,15 +42,29 @@ async function handleRequest(event) {
     return await uv.fetch(event);
   }
 
-  if (isScramjetRequest(event.request)) {
+  // /scramjet/<encoded> is SW-only. Falling through to the network hits
+  // Express's "Not found" catch-all. Wait for IndexedDB config, then always
+  // handle the prefix — even if route() would throw on a missing config.
+  if (isScramjetPrefix(event.request)) {
+    await ensureScramjetConfig();
     try {
-      await scramjet.loadConfig();
-      if (scramjet.route(event)) {
-        return await scramjet.fetch(event);
-      }
+      return await scramjet.fetch(event);
     } catch (error) {
-      console.error("[incog] scramjet route failed", error);
+      console.error("[incog] scramjet fetch failed", error);
+      return new Response("Scramjet could not open that page.", {
+        status: 502,
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      });
     }
+  }
+
+  try {
+    await scramjet.loadConfig();
+    if (scramjet.config && scramjet.route(event)) {
+      return await scramjet.fetch(event);
+    }
+  } catch (error) {
+    console.error("[incog] scramjet route failed", error);
   }
 
   return fetch(event.request);
