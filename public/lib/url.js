@@ -14,9 +14,49 @@ const TRACKER_PARAMS = new Set([
   "_gl",
 ]);
 
-export function normalizeInput(raw, { forceHttps = false, privacy = false } = {}) {
+export const SEARCH_ENGINES = {
+  google: "https://www.google.com/search?q=",
+  edge: "https://www.bing.com/search?q=",
+  duckduckgo: "https://duckduckgo.com/?q=",
+};
+
+export function searchUrl(query, engine = "duckduckgo") {
+  const base = SEARCH_ENGINES[engine] || SEARCH_ENGINES.duckduckgo;
+  return `${base}${encodeURIComponent(String(query ?? "").trim())}`;
+}
+
+export function looksLikeUrl(raw) {
+  const trimmed = String(raw ?? "").trim();
+  if (!trimmed || /\s/.test(trimmed)) return false;
+  if (/^[a-zA-Z][a-zA-Z+\-.]*:/.test(trimmed)) return true;
+
+  const host = trimmed.split("/")[0].split("?")[0].split("#")[0].split(":")[0];
+  if (!host) return false;
+  if (host.toLowerCase() === "localhost") return true;
+  if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(host)) return true;
+  if (host.includes(":")) return true;
+  return host.includes(".");
+}
+
+function shouldSearchHost(host) {
+  const name = String(host ?? "").replace(/^\[|\]$/g, "");
+  if (!name) return true;
+  if (name.toLowerCase() === "localhost") return false;
+  if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(name)) return false;
+  if (name.includes(":")) return false;
+  return !name.includes(".");
+}
+
+export function normalizeInput(
+  raw,
+  { forceHttps = false, privacy = false, searchEngine = "duckduckgo" } = {},
+) {
   const trimmed = String(raw ?? "").trim();
   if (!trimmed) return "";
+
+  if (!looksLikeUrl(trimmed)) {
+    return searchUrl(trimmed, searchEngine);
+  }
 
   let value = trimmed;
   if (!/^[a-zA-Z][a-zA-Z+\-.]*:/.test(value)) {
@@ -34,17 +74,8 @@ export function normalizeInput(raw, { forceHttps = false, privacy = false } = {}
     throw new Error("Only http and https URLs can be opened.");
   }
 
-  const host = parsed.hostname;
-  const isIpv4 = /^\d{1,3}(?:\.\d{1,3}){3}$/.test(host);
-  const isIpv6 = host.includes(":");
-  if (
-    host &&
-    !host.includes(".") &&
-    !isIpv4 &&
-    !isIpv6 &&
-    host.toLowerCase() !== "localhost"
-  ) {
-    parsed.hostname = `${host}.com`;
+  if (shouldSearchHost(parsed.hostname)) {
+    return searchUrl(parsed.hostname || trimmed, searchEngine);
   }
 
   if (forceHttps && parsed.protocol === "http:") {

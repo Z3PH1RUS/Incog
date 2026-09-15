@@ -2,7 +2,10 @@ import { normalizeInput } from "./lib/url.js";
 
 const SETTINGS_KEY = "incog.settings.v1";
 const HISTORY_KEY = "incog.history.v1";
+const CLOAK_KEY = "incog.cloak.v1";
 const MAX_HISTORY = 8;
+const DEFAULT_TITLE = "Incog — private proxy";
+const DEFAULT_ICON = "/favicon.svg";
 
 const DEFAULTS = {
   engine: "ultraviolet",
@@ -14,13 +17,14 @@ const DEFAULTS = {
   userAgentCustom: "",
   homepage: "",
   forgetMe: false,
+  searchEngine: "duckduckgo",
 };
 
 const urlInput = document.getElementById("url-input");
 const navForm = document.getElementById("nav-form");
 const emptyState = document.getElementById("empty-state");
 const browse = document.getElementById("browse");
-const frame = document.getElementById("view");
+const framesEl = document.getElementById("frames");
 const progress = document.getElementById("progress");
 const historyWrap = document.getElementById("history-wrap");
 const historyList = document.getElementById("history");
@@ -28,13 +32,22 @@ const settingsPanel = document.getElementById("settings-panel");
 const enginePill = document.getElementById("engine-pill");
 const toast = document.getElementById("toast");
 const uaCustomWrap = document.getElementById("ua-custom-wrap");
+const tabStrip = document.getElementById("tab-strip");
+const navBack = document.getElementById("nav-back");
+const navReload = document.getElementById("nav-reload");
+const cloakModal = document.getElementById("cloak-modal");
+const cloakForm = document.getElementById("cloak-form");
+const cloakUrl = document.getElementById("cloak-url");
+const cloakStatus = document.getElementById("cloak-status");
+const tabIcon = document.getElementById("tab-icon");
 
 let settings = loadSettings();
 let memoryHistory = [];
 let enginesReady = null;
 let connection = null;
 let scramjet = null;
-let scramjetFrame = null;
+const tabs = [];
+let activeId = "";
 
 function loadSettings() {
   try {
@@ -142,9 +155,9 @@ async function bootShared() {
   return enginesReady;
 }
 
-async function bootScramjet() {
+async function ensureScramjet() {
   await bootShared();
-  if (scramjetFrame) return;
+  if (scramjet) return;
   await resetScramjetDbIfBroken();
   const { ScramjetController } = window.$scramjetLoadController();
   scramjet = new ScramjetController({
@@ -156,7 +169,6 @@ async function bootScramjet() {
     },
   });
   await scramjet.init();
-  scramjetFrame = scramjet.createFrame(frame);
 }
 
 function readHistory() {
@@ -196,47 +208,203 @@ function renderHistory() {
   }
 }
 
+function activeTab() {
+  return tabs.find((tab) => tab.id === activeId) || tabs[0];
+}
+
+function tabTitle(url) {
+  if (!url) return "New tab";
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("google.") && parsed.pathname === "/search") {
+      return parsed.searchParams.get("q") || "Google";
+    }
+    if (parsed.hostname.includes("bing.") && parsed.pathname === "/search") {
+      return parsed.searchParams.get("q") || "Edge";
+    }
+    if (parsed.hostname.includes("duckduckgo.")) {
+      return parsed.searchParams.get("q") || "DuckDuckGo";
+    }
+    return parsed.hostname.replace(/^www\./, "") || parsed.href;
+  } catch {
+    return url;
+  }
+}
+
+function renderTabs() {
+  tabStrip.replaceChildren();
+  for (const tab of tabs) {
+    const wrap = document.createElement("div");
+    wrap.className = `tab${tab.id === activeId ? " is-active" : ""}`;
+    const label = document.createElement("button");
+    label.type = "button";
+    label.className = "tab-label";
+    label.textContent = tab.title;
+    label.addEventListener("click", () => selectTab(tab.id));
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "tab-close";
+    close.setAttribute("aria-label", "Close tab");
+    close.textContent = "×";
+    close.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeTab(tab.id);
+    });
+    wrap.append(label, close);
+    tabStrip.append(wrap);
+  }
+  const add = document.createElement("button");
+  add.type = "button";
+  add.className = "tab-new";
+  add.title = "New tab";
+  add.setAttribute("aria-label", "New tab");
+  add.textContent = "+";
+  add.addEventListener("click", () => createTab());
+  tabStrip.append(add);
+  syncNavButtons();
+}
+
+function syncNavButtons() {
+  const tab = activeTab();
+  navBack.disabled = !tab || !canGoBack(tab);
+}
+
+function canGoBack(tab) {
+  if (tab.index > 0) return true;
+  try {
+    return Boolean(tab.url && tab.iframe.contentWindow?.history.length > 1);
+  } catch {
+    return false;
+  }
+}
+
 function setBrowseMode(on) {
   document.body.classList.toggle("is-browse", on);
   emptyState.hidden = on;
   browse.hidden = !on;
+  for (const tab of tabs) {
+    tab.iframe.hidden = !on || tab.id !== activeId;
+  }
 }
 
-function syncSettingsUi() {
-  document.querySelector(`input[name="engine"][value="${settings.engine}"]`).checked = true;
-  document.getElementById("setting-theme").value = settings.theme;
-  document.getElementById("setting-links").value = settings.openLinks;
-  document.getElementById("setting-https").checked = settings.forceHttps;
-  document.getElementById("setting-privacy").checked = settings.privacyMode;
-  document.getElementById("setting-ua").value = settings.userAgent;
-  document.getElementById("setting-ua-custom").value = settings.userAgentCustom;
-  document.getElementById("setting-home").value = settings.homepage;
-  document.getElementById("setting-forget").checked = settings.forgetMe;
-  uaCustomWrap.hidden = settings.userAgent !== "custom";
-  enginePill.textContent = settings.engine === "scramjet" ? "Scramjet" : "Ultraviolet";
+function showActiveTab() {
+  const tab = activeTab();
+  if (!tab) return;
+  urlInput.value = tab.url;
+  setBrowseMode(Boolean(tab.url));
+  syncNavButtons();
 }
 
-function setSettingsOpen(open) {
-  settingsPanel.hidden = !open;
-  document.body.classList.toggle("settings-open", open);
-  document.getElementById("settings-toggle").setAttribute("aria-expanded", String(open));
-  if (open) document.getElementById("setting-theme").focus();
+function makeIframe() {
+  const iframe = document.createElement("iframe");
+  iframe.title = "Proxied page";
+  iframe.referrerPolicy = "no-referrer";
+  iframe.hidden = true;
+  iframe.addEventListener("load", () => onFrameLoad(iframe));
+  framesEl.append(iframe);
+  return iframe;
+}
+
+function createTab({ focus = true } = {}) {
+  const tab = {
+    id: crypto.randomUUID(),
+    title: "New tab",
+    url: "",
+    stack: [],
+    index: -1,
+    iframe: makeIframe(),
+    scramjetFrame: null,
+  };
+  tabs.push(tab);
+  if (focus) {
+    activeId = tab.id;
+    urlInput.value = "";
+    setBrowseMode(false);
+    urlInput.focus();
+  }
+  renderTabs();
+  return tab;
+}
+
+function selectTab(id) {
+  const tab = tabs.find((item) => item.id === id);
+  if (!tab) return;
+  activeId = tab.id;
+  showActiveTab();
+  renderTabs();
+}
+
+function closeTab(id) {
+  const index = tabs.findIndex((tab) => tab.id === id);
+  if (index < 0) return;
+  const [removed] = tabs.splice(index, 1);
+  removed.iframe.remove();
+  if (!tabs.length) createTab();
+  if (activeId === id) {
+    const next = tabs[Math.max(0, index - 1)];
+    activeId = next.id;
+  }
+  showActiveTab();
+  renderTabs();
+}
+
+function decodeFrameUrl(iframe) {
+  try {
+    const loc = iframe.contentWindow.location;
+    const path = `${loc.pathname}${loc.search}`;
+    const uvPrefix = window.__uv$config?.prefix;
+    if (uvPrefix && path.startsWith(uvPrefix)) {
+      return window.__uv$config.decodeUrl(path.slice(uvPrefix.length));
+    }
+    if (path.startsWith("/scramjet/")) {
+      return iframe.contentDocument?.title || "";
+    }
+  } catch {}
+  return "";
+}
+
+function onFrameLoad(iframe) {
+  const tab = tabs.find((item) => item.iframe === iframe);
+  if (!tab) return;
+  progress.hidden = true;
+  const decoded = decodeFrameUrl(iframe);
+  if (decoded) {
+    tab.url = decoded;
+    tab.title = tabTitle(decoded);
+    if (tab.id === activeId) urlInput.value = decoded;
+  } else if (tab.url) {
+    tab.title = tabTitle(tab.url);
+  }
+  try {
+    const pageTitle = iframe.contentDocument?.title?.trim();
+    if (pageTitle) tab.title = pageTitle.slice(0, 48);
+  } catch {}
+  if (tab.id === activeId) renderTabs();
 }
 
 function encodeUv(url) {
   return `${window.__uv$config.prefix}${window.__uv$config.encodeUrl(url)}`;
 }
 
-async function navigate(url) {
+async function navigateTab(tab, url, { record = true } = {}) {
   setBrowseMode(true);
   progress.hidden = false;
+  tab.url = url;
+  tab.title = tabTitle(url);
+  if (record) {
+    tab.stack = tab.stack.slice(0, tab.index + 1);
+    tab.stack.push(url);
+    tab.index = tab.stack.length - 1;
+  }
+  renderTabs();
   if (settings.engine === "scramjet") {
-    await bootScramjet();
-    scramjetFrame.go(url);
+    await ensureScramjet();
+    if (!tab.scramjetFrame) tab.scramjetFrame = scramjet.createFrame(tab.iframe);
+    tab.scramjetFrame.go(url);
     return;
   }
   await bootShared();
-  frame.src = encodeUv(url);
+  tab.iframe.src = encodeUv(url);
 }
 
 async function openUrl(raw, { push = true, fromChrome = false } = {}) {
@@ -245,6 +413,7 @@ async function openUrl(raw, { push = true, fromChrome = false } = {}) {
     url = normalizeInput(raw, {
       forceHttps: settings.forceHttps,
       privacy: settings.privacyMode,
+      searchEngine: settings.searchEngine,
     });
   } catch (error) {
     toastMsg(error.message);
@@ -258,10 +427,10 @@ async function openUrl(raw, { push = true, fromChrome = false } = {}) {
   }
 
   if (fromChrome && settings.openLinks === "new") {
-    window.open(`/?url=${encodeURIComponent(url)}`, "_blank", "noopener");
-    return;
+    createTab();
   }
 
+  const tab = activeTab();
   urlInput.value = url;
   remember(url);
   const next = `/?url=${encodeURIComponent(url)}`;
@@ -269,7 +438,7 @@ async function openUrl(raw, { push = true, fromChrome = false } = {}) {
   else history.replaceState({ url }, "", next);
 
   try {
-    await navigate(url);
+    await navigateTab(tab, url);
   } catch (error) {
     progress.hidden = true;
     toastMsg(error.message || "Could not start the proxy engine.");
@@ -277,13 +446,166 @@ async function openUrl(raw, { push = true, fromChrome = false } = {}) {
 }
 
 function goHome({ push = true } = {}) {
-  setBrowseMode(false);
-  progress.hidden = false;
+  const tab = activeTab();
+  if (tab) {
+    tab.url = "";
+    tab.title = "New tab";
+    tab.stack = [];
+    tab.index = -1;
+    tab.iframe.src = "about:blank";
+  }
   progress.hidden = true;
-  frame.src = "about:blank";
   urlInput.value = "";
+  setBrowseMode(false);
+  renderTabs();
   if (push) history.pushState({}, "", "/");
   urlInput.focus();
+}
+
+async function goBack() {
+  const tab = activeTab();
+  if (!tab) return;
+  try {
+    if (tab.iframe.contentWindow?.history.length > 1) {
+      tab.iframe.contentWindow.history.back();
+      if (tab.index > 0) {
+        tab.index -= 1;
+        tab.url = tab.stack[tab.index] || tab.url;
+        tab.title = tabTitle(tab.url);
+        urlInput.value = tab.url;
+      }
+      renderTabs();
+      return;
+    }
+  } catch {}
+  if (tab.index > 0) {
+    tab.index -= 1;
+    const url = tab.stack[tab.index];
+    urlInput.value = url;
+    await navigateTab(tab, url, { record: false });
+  }
+}
+
+async function reloadTab() {
+  const tab = activeTab();
+  if (!tab?.url) return;
+  progress.hidden = false;
+  try {
+    tab.iframe.contentWindow.location.reload();
+  } catch {
+    await navigateTab(tab, tab.url, { record: false });
+  }
+}
+
+function syncSettingsUi() {
+  document.querySelector(`input[name="engine"][value="${settings.engine}"]`).checked = true;
+  document.getElementById("setting-search").value = SEARCH_OR_DEFAULT(settings.searchEngine);
+  document.getElementById("setting-theme").value = settings.theme;
+  document.getElementById("setting-links").value = settings.openLinks;
+  document.getElementById("setting-https").checked = settings.forceHttps;
+  document.getElementById("setting-privacy").checked = settings.privacyMode;
+  document.getElementById("setting-ua").value = settings.userAgent;
+  document.getElementById("setting-ua-custom").value = settings.userAgentCustom;
+  document.getElementById("setting-home").value = settings.homepage;
+  document.getElementById("setting-forget").checked = settings.forgetMe;
+  uaCustomWrap.hidden = settings.userAgent !== "custom";
+  enginePill.textContent = settings.engine === "scramjet" ? "Scramjet" : "Ultraviolet";
+}
+
+function SEARCH_OR_DEFAULT(value) {
+  return ["google", "edge", "duckduckgo"].includes(value) ? value : "duckduckgo";
+}
+
+function setSettingsOpen(open) {
+  settingsPanel.hidden = !open;
+  document.body.classList.toggle("settings-open", open);
+  document.getElementById("settings-toggle").setAttribute("aria-expanded", String(open));
+  if (open) document.getElementById("setting-search").focus();
+}
+
+function setCloakOpen(open) {
+  cloakModal.hidden = !open;
+  if (open) {
+    cloakStatus.textContent = "";
+    cloakUrl.focus();
+  }
+}
+
+function applyCloakTo(doc, { title, icon }) {
+  if (!doc) return;
+  doc.title = title;
+  let link = doc.querySelector("link[rel='icon'], link[rel='shortcut icon']");
+  if (!link) {
+    link = doc.createElement("link");
+    link.rel = "icon";
+    doc.head?.append(link);
+  }
+  link.href = icon;
+}
+
+function applyCloak(meta) {
+  const payload = {
+    title: meta.title || DEFAULT_TITLE,
+    icon: meta.icon || DEFAULT_ICON,
+  };
+  applyCloakTo(document, payload);
+  if (tabIcon) {
+    tabIcon.href = payload.icon;
+    tabIcon.type = payload.icon.startsWith("data:") ? "" : "image/svg+xml";
+  }
+  try {
+    if (window.parent !== window) applyCloakTo(window.parent.document, payload);
+  } catch {}
+}
+
+function loadCloak() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(CLOAK_KEY) || "null");
+    if (stored?.title) applyCloak(stored);
+  } catch {}
+}
+
+function saveCloak(meta) {
+  localStorage.setItem(CLOAK_KEY, JSON.stringify(meta));
+  applyCloak(meta);
+}
+
+function resetCloak() {
+  localStorage.removeItem(CLOAK_KEY);
+  applyCloak({ title: DEFAULT_TITLE, icon: DEFAULT_ICON });
+}
+
+function openAboutBlank() {
+  const popup = window.open("about:blank", "_blank");
+  if (!popup) {
+    toastMsg("Allow popups to open about:blank.");
+    return;
+  }
+  const cloak = (() => {
+    try {
+      return JSON.parse(localStorage.getItem(CLOAK_KEY) || "null");
+    } catch {
+      return null;
+    }
+  })();
+  const title = cloak?.title || "about:blank";
+  const icon = cloak?.icon || DEFAULT_ICON;
+  const src = location.href;
+  popup.document.open();
+  popup.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><link rel="icon" href="${escapeAttr(icon)}"><style>html,body,iframe{margin:0;height:100%;width:100%;border:0;background:#0b0b0d}</style></head><body><iframe src="${escapeAttr(src)}" allow="fullscreen"></iframe></body></html>`);
+  popup.document.close();
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/'/g, "&#39;");
 }
 
 async function clearSession({ keepSettings = true } = {}) {
@@ -294,7 +616,10 @@ async function clearSession({ keepSettings = true } = {}) {
     const keys = await caches.keys();
     await Promise.all(keys.map((key) => caches.delete(key)));
   }
-  goHome();
+  for (const tab of [...tabs]) tab.iframe.remove();
+  tabs.length = 0;
+  createTab();
+  goHome({ push: false });
   if (!keepSettings) localStorage.removeItem(SETTINGS_KEY);
   toastMsg("Session cleared");
 }
@@ -304,12 +629,13 @@ navForm.addEventListener("submit", (event) => {
   openUrl(urlInput.value);
 });
 
-document.getElementById("new-tab").addEventListener("click", () => {
-  if (settings.openLinks === "new") {
-    window.open("/", "_blank", "noopener");
-    return;
-  }
+document.getElementById("brand").addEventListener("click", (event) => {
+  event.preventDefault();
   goHome();
+});
+
+document.getElementById("new-tab").addEventListener("click", () => {
+  createTab();
 });
 
 document.getElementById("clear-session").addEventListener("click", () => {
@@ -329,8 +655,47 @@ document.getElementById("settings-toggle").addEventListener("click", () => {
   setSettingsOpen(settingsPanel.hidden);
 });
 document.getElementById("settings-close").addEventListener("click", () => setSettingsOpen(false));
+document.getElementById("about-blank").addEventListener("click", openAboutBlank);
+document.getElementById("cloak-toggle").addEventListener("click", () => setCloakOpen(true));
+document.getElementById("cloak-cancel").addEventListener("click", () => setCloakOpen(false));
+document.getElementById("cloak-reset").addEventListener("click", () => {
+  resetCloak();
+  setCloakOpen(false);
+  toastMsg("Tab name and icon restored");
+});
+cloakForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  cloakStatus.textContent = "Copying name and icon…";
+  try {
+    const res = await fetch(`/api/cloak?url=${encodeURIComponent(cloakUrl.value)}`);
+    const body = await res.json();
+    if (!res.ok || !body.ok) throw new Error(body.error || "Could not copy that site.");
+    saveCloak({ title: body.title, icon: body.icon || DEFAULT_ICON });
+    setCloakOpen(false);
+    toastMsg(`Tab is now ${body.title}`);
+  } catch (error) {
+    cloakStatus.textContent = error.message;
+  }
+});
+navBack.addEventListener("click", () => {
+  goBack();
+});
+navReload.addEventListener("click", () => {
+  reloadTab();
+});
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") setSettingsOpen(false);
+  if (event.key === "Escape") {
+    setSettingsOpen(false);
+    setCloakOpen(false);
+  }
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "t") {
+    event.preventDefault();
+    createTab();
+  }
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "w" && tabs.length) {
+    event.preventDefault();
+    closeTab(activeId);
+  }
 });
 
 document.getElementById("theme-toggle").addEventListener("click", () => {
@@ -346,13 +711,15 @@ for (const radio of document.querySelectorAll('input[name="engine"]')) {
     settings.engine = radio.value;
     saveSettings();
     syncSettingsUi();
-    const current = new URLSearchParams(location.search).get("url");
-    if (current) {
-      await openUrl(current, { push: false });
-    }
+    const tab = activeTab();
+    if (tab?.url) await navigateTab(tab, tab.url, { record: false });
   });
 }
 
+document.getElementById("setting-search").addEventListener("change", (event) => {
+  settings.searchEngine = event.target.value;
+  saveSettings();
+});
 document.getElementById("setting-theme").addEventListener("change", (event) => {
   settings.theme = event.target.value;
   saveSettings();
@@ -390,10 +757,6 @@ document.getElementById("setting-forget").addEventListener("change", (event) => 
   renderHistory();
 });
 
-frame.addEventListener("load", () => {
-  progress.hidden = true;
-});
-
 window.addEventListener("popstate", (event) => {
   const url = event.state?.url || new URLSearchParams(location.search).get("url");
   if (url) openUrl(url, { push: false });
@@ -409,8 +772,10 @@ matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
 });
 
 applyTheme();
+loadCloak();
 syncSettingsUi();
 renderHistory();
+createTab();
 
 const bootUrl = new URLSearchParams(location.search).get("url") || settings.homepage;
 if (bootUrl) {

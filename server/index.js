@@ -21,6 +21,7 @@ import {
   recordsForDomain,
   targetARecords,
 } from "./byod.js";
+import { fetchCloakMeta } from "./cloak.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(__dirname, "../public");
@@ -88,6 +89,18 @@ app.get("/api/byod", async (req, res) => {
     hints: byodHints(),
     records,
   });
+});
+
+app.get("/api/cloak", async (req, res) => {
+  try {
+    const meta = await fetchCloakMeta(req.query.url);
+    res.json(meta);
+  } catch (error) {
+    res.status(400).json({
+      ok: false,
+      error: error.message || "Could not copy that site.",
+    });
+  }
 });
 
 app.post("/api/byod", express.json({ limit: "8kb" }), async (req, res) => {

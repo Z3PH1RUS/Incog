@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#0b0b0d">
   <meta name="description" content="Incog is a private web proxy powered by Ultraviolet and Scramjet.">
   <title>Incog — private proxy</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" id="tab-icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <script>
     try {
@@ -27,7 +27,7 @@
 
   <div class="app">
     <header class="topbar">
-      <a class="brand" href="/" aria-label="Incog home">
+      <a class="brand" id="brand" href="/" aria-label="Incog home">
         <span class="mark" aria-hidden="true">
           <svg viewBox="0 0 64 64" fill="none">
             <path d="M32 6L52 14.2V29.4C52 44.1 32 58 32 58S12 44.1 12 29.4V14.2L32 6Z" fill="#17151d" stroke="#6f63c9" stroke-width="1.6"/>
@@ -48,6 +48,12 @@
             <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/>
           </svg>
         </button>
+        <button type="button" class="icon-btn" id="about-blank" title="Open Incog in about:blank">
+          about:blank
+        </button>
+        <button type="button" class="icon-btn" id="cloak-toggle" title="Copy another site’s name and icon">
+          Cloak
+        </button>
         <button type="button" class="icon-btn" id="settings-toggle" aria-expanded="false" aria-controls="settings-panel">
           Settings
         </button>
@@ -60,22 +66,35 @@
           <div class="hero-copy">
             <div class="badge">Private hop</div>
             <h1>You’ve gone <em>incog</em>.</h1>
-            <p class="lede">Type a URL. Incog opens it through Ultraviolet or Scramjet so the destination sees this host, not your browser.</p>
+            <p class="lede">Type a URL or a search. Incog opens it through Ultraviolet or Scramjet so the destination sees this host, not your browser.</p>
           </div>
 
           <form class="launch" id="nav-form">
-            <label class="sr-only" for="url-input">Website address</label>
+            <label class="sr-only" for="url-input">Search or website address</label>
             <div class="bar">
+              <button type="button" class="nav-btn" id="nav-back" title="Back" aria-label="Back" disabled>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M14.5 6.5 8 12l6.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button type="button" class="nav-btn" id="nav-reload" title="Reload" aria-label="Reload">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M19 12a7 7 0 1 1-2.1-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                  <path d="M19 5v4.2h-4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
               <span class="lock" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none">
                   <rect x="5" y="11" width="14" height="10" rx="2.2" stroke="currentColor" stroke-width="1.6"/>
                   <path d="M8 11V8.2a4 4 0 0 1 8 0V11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                 </svg>
               </span>
-              <input id="url-input" name="url" type="text" spellcheck="false" autocomplete="off" placeholder="https://example.com">
+              <input id="url-input" name="url" type="text" spellcheck="false" autocomplete="off" placeholder="Search or type a URL">
               <button type="submit" class="go">Go</button>
             </div>
           </form>
+
+          <div class="tab-strip" id="tab-strip"></div>
 
           <div class="quick-actions">
             <button type="button" class="ghost" id="new-tab">New tab</button>
@@ -96,92 +115,119 @@
 
           <div class="frame-wrap" id="browse" hidden>
             <div class="progress" id="progress" hidden></div>
-            <iframe id="view" title="Proxied page" referrerpolicy="no-referrer"></iframe>
+            <div class="frames" id="frames"></div>
           </div>
         </section>
       </div>
-
-      <aside class="panel" id="settings-panel" hidden>
-        <div class="panel-head">
-          <h2>Settings</h2>
-          <button type="button" class="icon-btn" id="settings-close" aria-label="Close settings">✕</button>
-        </div>
-
-        <fieldset class="group">
-          <legend>Proxy engine</legend>
-          <p class="hint">New navigations use the selected rewriter. Transport stays Wisp + Epoxy either way.</p>
-          <label class="choice">
-            <input type="radio" name="engine" value="ultraviolet">
-            <span>
-              <strong>Ultraviolet</strong>
-              Titanium Network SW rewriter — default
-            </span>
-          </label>
-          <label class="choice">
-            <input type="radio" name="engine" value="scramjet">
-            <span>
-              <strong>Scramjet</strong>
-              Mercury Workshop successor engine
-            </span>
-          </label>
-        </fieldset>
-
-        <label class="field">
-          Theme
-          <select id="setting-theme">
-            <option value="dark">Dark (incognito)</option>
-            <option value="light">Light</option>
-            <option value="system">System</option>
-          </select>
-        </label>
-
-        <label class="field">
-          Open links
-          <select id="setting-links">
-            <option value="same">Same tab</option>
-            <option value="new">New tab</option>
-          </select>
-        </label>
-
-        <label class="toggle">
-          <input type="checkbox" id="setting-https">
-          <span>Force HTTPS</span>
-        </label>
-
-        <label class="toggle">
-          <input type="checkbox" id="setting-privacy">
-          <span>Strip trackers / light privacy</span>
-        </label>
-
-        <label class="field">
-          User-agent
-          <select id="setting-ua">
-            <option value="desktop">Desktop</option>
-            <option value="mobile">Mobile</option>
-            <option value="custom">Custom</option>
-          </select>
-        </label>
-        <label class="field" id="ua-custom-wrap" hidden>
-          Custom user-agent
-          <input id="setting-ua-custom" type="text" maxlength="256" placeholder="Mozilla/5.0 …">
-        </label>
-        <p class="hint">Force HTTPS and tracker-query stripping run before the engine. Script blocking and UA spoof are best-effort on SW proxies.</p>
-
-        <label class="field">
-          Homepage / start URL
-          <input id="setting-home" type="text" placeholder="Leave empty for the empty state">
-        </label>
-
-        <label class="toggle">
-          <input type="checkbox" id="setting-forget">
-          <span>Forget me on exit</span>
-        </label>
-
-        <div class="panel-actions">
-          <button type="button" class="ghost" id="clear-cache">Clear cookies &amp; cache</button>
-        </div>
-      </aside>
     </div>
+  </div>
+
+  <aside class="panel" id="settings-panel" hidden>
+    <div class="panel-inner">
+      <div class="panel-head">
+        <h2>Settings</h2>
+        <button type="button" class="icon-btn" id="settings-close" aria-label="Close settings">✕</button>
+      </div>
+
+      <fieldset class="group">
+        <legend>Proxy engine</legend>
+        <p class="hint">New navigations use the selected rewriter. Transport stays Wisp + Epoxy either way.</p>
+        <label class="choice">
+          <input type="radio" name="engine" value="ultraviolet">
+          <span>
+            <strong>Ultraviolet</strong>
+            Titanium Network SW rewriter — default
+          </span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="engine" value="scramjet">
+          <span>
+            <strong>Scramjet</strong>
+            Mercury Workshop successor engine
+          </span>
+        </label>
+      </fieldset>
+
+      <label class="field">
+        Browser
+        <select id="setting-search">
+          <option value="google">Google</option>
+          <option value="edge">Microsoft Edge</option>
+          <option value="duckduckgo">DuckDuckGo</option>
+        </select>
+      </label>
+      <p class="hint">Words without a dot, like youtube, search in this engine instead of needing .com.</p>
+
+      <label class="field">
+        Theme
+        <select id="setting-theme">
+          <option value="dark">Dark (incognito)</option>
+          <option value="light">Light</option>
+          <option value="system">System</option>
+        </select>
+      </label>
+
+      <label class="field">
+        Open links
+        <select id="setting-links">
+          <option value="same">Same tab</option>
+          <option value="new">New tab</option>
+        </select>
+      </label>
+
+      <label class="toggle">
+        <input type="checkbox" id="setting-https">
+        <span>Force HTTPS</span>
+      </label>
+
+      <label class="toggle">
+        <input type="checkbox" id="setting-privacy">
+        <span>Strip trackers / light privacy</span>
+      </label>
+
+      <label class="field">
+        User-agent
+        <select id="setting-ua">
+          <option value="desktop">Desktop</option>
+          <option value="mobile">Mobile</option>
+          <option value="custom">Custom</option>
+        </select>
+      </label>
+      <label class="field" id="ua-custom-wrap" hidden>
+        Custom user-agent
+        <input id="setting-ua-custom" type="text" maxlength="256" placeholder="Mozilla/5.0 …">
+      </label>
+      <p class="hint">Force HTTPS and tracker-query stripping run before the engine. Script blocking and UA spoof are best-effort on SW proxies.</p>
+
+      <label class="field">
+        Homepage / start URL
+        <input id="setting-home" type="text" placeholder="Leave empty for the empty state">
+      </label>
+
+      <label class="toggle">
+        <input type="checkbox" id="setting-forget">
+        <span>Forget me on exit</span>
+      </label>
+
+      <div class="panel-actions">
+        <button type="button" class="ghost" id="clear-cache">Clear cookies &amp; cache</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="modal" id="cloak-modal" hidden>
+    <form class="modal-card" id="cloak-form">
+      <h2>Tab cloaker</h2>
+      <p>Enter a site. Incog copies its name and icon onto this tab so it no longer says Incog.</p>
+      <label class="sr-only" for="cloak-url">Site to copy</label>
+      <input id="cloak-url" type="text" spellcheck="false" autocomplete="off" placeholder="https://classroom.google.com">
+      <p class="hint" id="cloak-status"></p>
+      <div class="modal-actions">
+        <button type="button" class="ghost" id="cloak-cancel">Cancel</button>
+        <button type="button" class="ghost" id="cloak-reset">Reset</button>
+        <button type="submit" class="go">Cloak</button>
+      </div>
+    </form>
   </div>
 
   <p class="toast" id="toast" hidden></p>

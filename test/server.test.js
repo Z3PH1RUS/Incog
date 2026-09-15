@@ -31,6 +31,22 @@ describe("standalone website server", () => {
     assert.doesNotMatch(html, /class="tips"/);
     assert.doesNotMatch(html, /id="popular"/);
     assert.doesNotMatch(html, /wikipedia\.org/);
+    assert.match(html, /about:blank/);
+    assert.match(html, /id="cloak-toggle"/);
+    assert.match(html, /id="setting-search"/);
+    assert.match(html, /id="tab-strip"/);
+    assert.match(html, /id="nav-back"/);
+    assert.match(html, /id="nav-reload"/);
+
+    const cloakBlocked = await fetch(`${base}/api/cloak?url=http://127.0.0.1/`);
+    assert.equal(cloakBlocked.status, 400);
+
+    const cloak = await fetch(`${base}/api/cloak?url=${encodeURIComponent("https://example.com")}`);
+    assert.equal(cloak.status, 200);
+    const cloakBody = await cloak.json();
+    assert.equal(cloakBody.ok, true);
+    assert.match(cloakBody.title, /Example Domain/i);
+    assert.ok(cloakBody.icon.startsWith("data:image/"));
 
     const uv = await fetch(`${base}/uv/uv.bundle.js`);
     assert.equal(uv.status, 200);
