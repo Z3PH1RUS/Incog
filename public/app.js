@@ -575,6 +575,20 @@ function resetCloak() {
   applyCloak({ title: DEFAULT_TITLE, icon: DEFAULT_ICON });
 }
 
+function paintAboutBlank(win, { title, icon, src }) {
+  const doc = win.document;
+  doc.open();
+  doc.write(
+    `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><link rel="icon" href="${escapeAttr(icon)}"><style>html,body,iframe{margin:0;height:100%;width:100%;border:0;background:#0b0b0d}</style></head><body></body></html>`,
+  );
+  doc.close();
+  const frame = doc.createElement("iframe");
+  frame.src = src;
+  frame.setAttribute("allow", "fullscreen");
+  frame.style.cssText = "border:0;width:100%;height:100%";
+  doc.body.append(frame);
+}
+
 function openAboutBlank() {
   const popup = window.open("about:blank", "_blank");
   if (!popup) {
@@ -588,12 +602,20 @@ function openAboutBlank() {
       return null;
     }
   })();
-  const title = cloak?.title || "about:blank";
-  const icon = cloak?.icon || DEFAULT_ICON;
-  const src = location.href;
-  popup.document.open();
-  popup.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><link rel="icon" href="${escapeAttr(icon)}"><style>html,body,iframe{margin:0;height:100%;width:100%;border:0;background:#0b0b0d}</style></head><body><iframe src="${escapeAttr(src)}" allow="fullscreen"></iframe></body></html>`);
-  popup.document.close();
+  const payload = {
+    title: cloak?.title || "about:blank",
+    icon: cloak?.icon || DEFAULT_ICON,
+    src: `${location.origin}/${location.search}`,
+  };
+  const fill = () => {
+    try {
+      if (!popup.document.querySelector("iframe")) paintAboutBlank(popup, payload);
+    } catch {}
+  };
+  fill();
+  popup.addEventListener("load", fill);
+  setTimeout(fill, 50);
+  setTimeout(fill, 250);
 }
 
 function escapeHtml(value) {
