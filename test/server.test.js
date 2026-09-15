@@ -35,7 +35,8 @@ describe("standalone website server", () => {
     assert.match(html, /id="cloak-toggle"/);
     assert.match(html, /id="setting-search"/);
     assert.match(html, /id="tab-strip"/);
-    assert.match(html, /src="\/favicon\.svg\?v=3"/);
+    assert.match(html, /src="\/favicon\.png\?v=4"/);
+    assert.match(html, /theme-color" content="#000000"/);
     assert.match(html, /id="tab-strip"[\s\S]*id="nav-form"/);
     assert.match(html, /id="nav-back"/);
     assert.match(html, /id="nav-reload"/);
@@ -49,6 +50,16 @@ describe("standalone website server", () => {
     assert.equal(cloakBody.ok, true);
     assert.match(cloakBody.title, /Example Domain/i);
     assert.ok(cloakBody.icon.startsWith("data:image/"));
+
+    const icon = await fetch(`${base}/favicon.png`);
+    assert.equal(icon.status, 200);
+    assert.match(icon.headers.get("content-type") || "", /image\/png/);
+
+    const css = await fetch(`${base}/styles.css`);
+    assert.equal(css.status, 200);
+    const cssText = await css.text();
+    assert.match(cssText, /--bg:\s*#000000/);
+    assert.doesNotMatch(cssText, /#8b7cf0|#7c6ce8|#6b5ce7/i);
 
     const uv = await fetch(`${base}/uv/uv.bundle.js`);
     assert.equal(uv.status, 200);

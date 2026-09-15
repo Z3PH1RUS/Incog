@@ -1,6 +1,6 @@
 # Incog
 
-Incog is a privacy-oriented web proxy with an incognito-mode look: matte black, charcoal surfaces, and a quiet purple accent. You type a URL; Incog opens it through a real interception proxy so the destination sees this host instead of your browser.
+Incog is a privacy-oriented web proxy with an incognito-mode look: matte black, charcoal surfaces, and a grey accent. You type a URL; Incog opens it through a real interception proxy so the destination sees this host instead of your browser.
 
 The **primary engine is [Ultraviolet](https://github.com/titaniumnetwork-dev/Ultraviolet)** (Titanium Network). **[Scramjet](https://github.com/MercuryWorkshop/scramjet)** is available as an alternate engine. Both share the same **Wisp + Epoxy** transport. Switch engines in Settings — the choice is saved in `localStorage` and used for the next navigation.
 

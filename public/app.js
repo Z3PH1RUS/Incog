@@ -5,7 +5,7 @@ const HISTORY_KEY = "incog.history.v1";
 const CLOAK_KEY = "incog.cloak.v1";
 const MAX_HISTORY = 8;
 const DEFAULT_TITLE = "Incog — private proxy";
-const DEFAULT_ICON = "/favicon.svg";
+const DEFAULT_ICON = "/favicon.png";
 
 const DEFAULTS = {
   engine: "ultraviolet",
@@ -73,7 +73,7 @@ function applyTheme() {
   document.documentElement.dataset.themePref = settings.theme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute(
     "content",
-    resolvedTheme() === "light" ? "#f4f1ea" : "#0b0b0d",
+    resolvedTheme() === "light" ? "#f3f3f3" : "#000000",
   );
 }
 
@@ -588,7 +588,7 @@ function paintAboutBlank(win, { title, icon, src }) {
   const doc = win.document;
   doc.open();
   doc.write(
-    `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><link rel="icon" href="${escapeAttr(icon)}"><style>html,body,iframe{margin:0;height:100%;width:100%;border:0;background:#0b0b0d}</style></head><body></body></html>`,
+    `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><link rel="icon" href="${escapeAttr(icon)}"><style>html,body,iframe{margin:0;height:100%;width:100%;border:0;background:#000}</style></head><body></body></html>`,
   );
   doc.close();
   const frame = doc.createElement("iframe");

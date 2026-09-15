@@ -1,21 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="tile" x1="12" y1="0" x2="52" y2="64">
-      <stop offset="0" stop-color="#9a8cf5"/>
-      <stop offset=".48" stop-color="#6d5ed6"/>
-      <stop offset="1" stop-color="#3b2f86"/>
-    </linearGradient>
-    <linearGradient id="ink" x1="32" y1="12" x2="32" y2="54">
-      <stop offset="0" stop-color="#2c2740"/>
-      <stop offset="1" stop-color="#121018"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="18" fill="url(#tile)"/>
-  <path d="M21 31c.3-9.4 5.2-16.2 11-16.2S42.7 21.6 43 31" fill="url(#ink)"/>
-  <rect x="12.5" y="28.5" width="39" height="5.2" rx="2.6" fill="#f6f2ff"/>
-  <circle cx="24.2" cy="44.6" r="8.1" fill="url(#ink)"/>
-  <circle cx="39.8" cy="44.6" r="8.1" fill="url(#ink)"/>
-  <path d="M31.4 44.6h1.2" stroke="#121018" stroke-width="3.6" stroke-linecap="round"/>
-  <circle cx="24.2" cy="44.6" r="4.15" fill="none" stroke="#efeaff" stroke-width="1.9"/>
-  <circle cx="39.8" cy="44.6" r="4.15" fill="none" stroke="#efeaff" stroke-width="1.9"/>
+  <rect width="64" height="64" fill="#000"/>
+  <path fill="#fff" d="M20.6 29.6c.4-7.6 4.6-13.2 11.4-13.6 2.4 3.4 5.8 3.6 8.6.4 5.8.8 9.4 6 9.8 13.2H20.6Z"/>
+  <path fill="#fff" d="M8.8 33.4c4.6-4.2 12.6-6.2 23.2-6.2s18.6 2 23.2 6.2c-4.2 3.6-12.4 5.8-23.2 5.8S13 37 8.8 33.4Z"/>
+  <path fill="#000" d="M20.4 29.2h23.2c0 2.4-4.4 3.8-11.6 3.8s-11.6-1.4-11.6-3.8Z"/>
+  <circle cx="24.4" cy="48.2" r="8.4" fill="none" stroke="#fff" stroke-width="2.3"/>
+  <circle cx="39.6" cy="48.2" r="7.2" fill="#fff"/>
+  <circle cx="39.6" cy="48.2" r="8.4" fill="none" stroke="#fff" stroke-width="2.3"/>
+  <path fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" d="M32.4 46.6v2.8"/>
 </svg>

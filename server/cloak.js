@@ -137,7 +137,7 @@ function iconDataUrl(buffer, contentType) {
 
 function fallbackIcon(host) {
   const letter = (String(host || "?").replace(/^www\./i, "")[0] || "?").toUpperCase();
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#5b4db8"/><text x="32" y="42" text-anchor="middle" font-size="30" fill="#f7f4ff" font-family="sans-serif">${letter}</text></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#111"/><text x="32" y="42" text-anchor="middle" font-size="30" fill="#eee" font-family="sans-serif">${letter}</text></svg>`;
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 }
 
