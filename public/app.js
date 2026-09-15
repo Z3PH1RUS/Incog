@@ -105,6 +105,15 @@ async function registerSW() {
   }
   await navigator.serviceWorker.register("/sw.js", { scope: "/" });
   await navigator.serviceWorker.ready;
+  if (navigator.serviceWorker.controller) return;
+  await new Promise((resolve) => {
+    const done = () => {
+      navigator.serviceWorker.removeEventListener("controllerchange", done);
+      resolve();
+    };
+    navigator.serviceWorker.addEventListener("controllerchange", done);
+    setTimeout(done, 2500);
+  });
 }
 
 async function ensureTransport() {
@@ -114,15 +123,6 @@ async function ensureTransport() {
   if ((await connection.getTransport()) !== "/epoxy/index.mjs") {
     await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl() }]);
   }
-}
-
-function openIdb(name, version) {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(name, version);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    request.onupgradeneeded = () => {};
-  });
 }
 
 function deleteIdb(name) {
@@ -141,17 +141,31 @@ function deleteIdb(name) {
   });
 }
 
-async function resetScramjetDbIfBroken() {
-  let stale = true;
+async function scramjetDbExists() {
   try {
-    const db = await openIdb("$scramjet", 1);
-    stale = !db.objectStoreNames.contains("config");
-    db.close();
+    const dbs = await indexedDB.databases();
+    return dbs.some((db) => db.name === "$scramjet");
   } catch {
-    stale = true;
+    return false;
   }
-  if (!stale) return;
-  await deleteIdb("$scramjet");
+}
+
+async function resetScramjetDbIfBroken() {
+  if (!(await scramjetDbExists())) return;
+  let db;
+  try {
+    db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open("$scramjet");
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  } catch {
+    await deleteIdb("$scramjet");
+    return;
+  }
+  const stale = !db.objectStoreNames.contains("config");
+  db.close();
+  if (stale) await deleteIdb("$scramjet");
 }
 
 async function bootShared() {
@@ -164,12 +178,9 @@ async function bootShared() {
   return enginesReady;
 }
 
-async function ensureScramjet() {
-  await bootShared();
-  if (scramjet) return;
-  await resetScramjetDbIfBroken();
+function createScramjetController() {
   const { ScramjetController } = window.$scramjetLoadController();
-  scramjet = new ScramjetController({
+  return new ScramjetController({
     prefix: "/scramjet/",
     files: {
       wasm: "/scram/scramjet.wasm.wasm",
@@ -177,7 +188,22 @@ async function ensureScramjet() {
       sync: "/scram/scramjet.sync.js",
     },
   });
-  await scramjet.init();
+}
+
+async function ensureScramjet() {
+  await bootShared();
+  if (scramjet) return;
+  await resetScramjetDbIfBroken();
+  scramjet = createScramjetController();
+  try {
+    await scramjet.init();
+  } catch (error) {
+    console.warn("[incog] scramjet init failed, resetting $scramjet", error);
+    scramjet = null;
+    await deleteIdb("$scramjet");
+    scramjet = createScramjetController();
+    await scramjet.init();
+  }
 }
 
 function readHistory() {
