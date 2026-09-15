@@ -67,6 +67,12 @@ describe("standalone website server", () => {
     assert.match(cssText, /--bg:\s*#000000/);
     assert.doesNotMatch(cssText, /#8b7cf0|#7c6ce8|#6b5ce7/i);
 
+    const missing = await fetch(`${base}/uv/service/not-a-real-page`);
+    assert.equal(missing.status, 404);
+    const missingBody = await missing.text();
+    assert.doesNotMatch(missingBody, /You’ve gone/);
+    assert.doesNotMatch(missingBody, /Incog — private proxy/);
+
     const uv = await fetch(`${base}/uv/uv.bundle.js`);
     assert.equal(uv.status, 200);
 

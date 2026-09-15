@@ -1,4 +1,4 @@
-import { normalizeInput } from "./lib/url.js";
+import { normalizeInput, usableDestination } from "./lib/url.js";
 
 const SETTINGS_KEY = "incog.settings.v1";
 const HISTORY_KEY = "incog.history.v1";
@@ -320,6 +320,14 @@ function canGoBack(tab) {
   }
 }
 
+function pageUrl(value) {
+  return usableDestination(value, location.origin);
+}
+
+function isChromeTitle(value) {
+  return String(value ?? "").trim() === DEFAULT_TITLE;
+}
+
 function keepChrome() {
   return tabs.some((tab) => tab.url) || tabs.length > 1;
 }
@@ -336,10 +344,11 @@ function setBrowseMode(on) {
 function showActiveTab() {
   const tab = activeTab();
   if (!tab) return;
-  urlInput.value = tab.url;
+  urlInput.value = tab.url || "";
   setBrowseMode(keepChrome());
-  if (tab.url) {
-    history.replaceState({ url: tab.url }, "", `/?url=${encodeURIComponent(tab.url)}`);
+  const href = pageUrl(tab.url);
+  if (href) {
+    history.replaceState({ url: href }, "", `/?url=${encodeURIComponent(href)}`);
   } else {
     history.replaceState({}, "", "/");
   }
@@ -351,6 +360,7 @@ function makeIframe() {
   iframe.title = "Proxied page";
   iframe.referrerPolicy = "no-referrer";
   iframe.hidden = true;
+  iframe.src = "about:blank";
   iframe.addEventListener("load", () => onFrameLoad(iframe));
   framesEl.append(iframe);
   return iframe;
@@ -399,16 +409,15 @@ function closeTab(id) {
   renderTabs();
 }
 
-function decodeFrameUrl(iframe) {
+function decodeFrameUrl(iframe, tab) {
   try {
+    const fromFrame = pageUrl(tab?.scramjetFrame?.url?.href || tab?.scramjetFrame?.url);
+    if (fromFrame) return fromFrame;
     const loc = iframe.contentWindow.location;
     const path = `${loc.pathname}${loc.search}`;
     const uvPrefix = window.__uv$config?.prefix;
     if (uvPrefix && path.startsWith(uvPrefix)) {
-      return window.__uv$config.decodeUrl(path.slice(uvPrefix.length));
-    }
-    if (path.startsWith("/scramjet/")) {
-      return iframe.contentDocument?.title || "";
+      return pageUrl(window.__uv$config.decodeUrl(path.slice(uvPrefix.length)));
     }
   } catch {}
   return "";
@@ -418,17 +427,17 @@ function onFrameLoad(iframe) {
   const tab = tabs.find((item) => item.iframe === iframe);
   if (!tab) return;
   progress.hidden = true;
-  const decoded = decodeFrameUrl(iframe);
+  const decoded = decodeFrameUrl(iframe, tab);
   if (decoded) {
     tab.url = decoded;
     tab.title = tabTitle(decoded);
     if (tab.id === activeId) urlInput.value = decoded;
-  } else if (tab.url) {
+  } else if (pageUrl(tab.url)) {
     tab.title = tabTitle(tab.url);
   }
   try {
     const pageTitle = iframe.contentDocument?.title?.trim();
-    if (pageTitle) tab.title = pageTitle.slice(0, 48);
+    if (pageTitle && !isChromeTitle(pageTitle)) tab.title = pageTitle.slice(0, 48);
   } catch {}
   if (tab.id === activeId) renderTabs();
 }
@@ -450,7 +459,19 @@ async function navigateTab(tab, url, { record = true } = {}) {
   renderTabs();
   if (settings.engine === "scramjet") {
     await ensureScramjet();
-    if (!tab.scramjetFrame) tab.scramjetFrame = scramjet.createFrame(tab.iframe);
+    if (!tab.scramjetFrame) {
+      tab.scramjetFrame = scramjet.createFrame(tab.iframe);
+      tab.scramjetFrame.addEventListener("urlchange", (event) => {
+        const href = pageUrl(event.url?.href || event.url);
+        if (!href) return;
+        tab.url = href;
+        tab.title = tabTitle(href);
+        if (tab.id !== activeId) return;
+        urlInput.value = href;
+        history.replaceState({ url: href }, "", `/?url=${encodeURIComponent(href)}`);
+        renderTabs();
+      });
+    }
     tab.scramjetFrame.go(url);
     return;
   }
@@ -459,9 +480,11 @@ async function navigateTab(tab, url, { record = true } = {}) {
 }
 
 async function openUrl(raw, { push = true, fromChrome = false } = {}) {
+  const trimmed = String(raw ?? "").trim();
+  if (!trimmed || isChromeTitle(trimmed)) return;
   let url;
   try {
-    url = normalizeInput(raw, {
+    url = normalizeInput(trimmed, {
       forceHttps: settings.forceHttps,
       privacy: settings.privacyMode,
       searchEngine: settings.searchEngine,
@@ -474,6 +497,17 @@ async function openUrl(raw, { push = true, fromChrome = false } = {}) {
     navForm.classList.remove("shake");
     void navForm.offsetWidth;
     navForm.classList.add("shake");
+    return;
+  }
+  try {
+    const parsed = new URL(url);
+    if (
+      parsed.origin === location.origin &&
+      (parsed.pathname === "/" || parsed.searchParams.has("url"))
+    ) {
+      return;
+    }
+  } catch {
     return;
   }
 
@@ -918,7 +952,7 @@ renderHistory();
 createTab();
 
 const bootUrl = new URLSearchParams(location.search).get("url") || settings.homepage;
-if (bootUrl) {
+if (bootUrl && !isChromeTitle(bootUrl)) {
   openUrl(bootUrl, { push: false });
 } else {
   urlInput.focus();

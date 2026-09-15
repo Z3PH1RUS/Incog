@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { looksLikeUrl, normalizeInput, searchUrl } from "../public/lib/url.js";
+import { looksLikeUrl, normalizeInput, searchUrl, usableDestination } from "../public/lib/url.js";
 
 describe("normalizeInput", () => {
   it("adds https and accepts a public URL", () => {
@@ -29,6 +29,18 @@ describe("normalizeInput", () => {
       normalizeInput("https://youtube.com/watch?v=1"),
       "https://youtube.com/watch?v=1",
     );
+  });
+
+  it("does not treat the Incog chrome or a page title as a destination", () => {
+    assert.equal(usableDestination("Incog — private proxy"), "");
+    assert.equal(
+      usableDestination(
+        "https://incog.example/?url=Incog%20%E2%80%94%20private%20proxy",
+        "https://incog.example",
+      ),
+      "",
+    );
+    assert.equal(usableDestination("https://example.com/"), "https://example.com/");
   });
 
   it("treats spaced text as a search", () => {

@@ -20,6 +20,35 @@ export const SEARCH_ENGINES = {
   duckduckgo: "https://duckduckgo.com/?q=",
 };
 
+export function usableDestination(raw, selfOrigin = "") {
+  const trimmed = String(raw ?? "").trim();
+  if (!trimmed) return "";
+  let parsed;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return "";
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+  if (selfOrigin) {
+    try {
+      if (parsed.origin === new URL(selfOrigin).origin) {
+        const path = parsed.pathname || "/";
+        if (
+          path === "/" ||
+          path === "/index.html" ||
+          path === "/sw.js" ||
+          path.startsWith("/api/") ||
+          parsed.searchParams.has("url")
+        ) {
+          return "";
+        }
+      }
+    } catch {}
+  }
+  return parsed.href;
+}
+
 export function searchUrl(query, engine = "duckduckgo") {
   const base = SEARCH_ENGINES[engine] || SEARCH_ENGINES.duckduckgo;
   return `${base}${encodeURIComponent(String(query ?? "").trim())}`;

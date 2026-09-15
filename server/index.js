@@ -167,6 +167,15 @@ app.use(
 );
 
 app.use((req, res) => {
+  if (
+    req.path.startsWith("/uv/") ||
+    req.path.startsWith("/scramjet/") ||
+    req.path.startsWith("/wisp/") ||
+    req.path.startsWith("/api/")
+  ) {
+    res.status(404).type("text/plain").send("Not found");
+    return;
+  }
   res.sendFile(path.join(publicDir, "index.html"));
 });
 
