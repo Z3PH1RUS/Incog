@@ -27,6 +27,10 @@ describe("standalone website server", () => {
     assert.doesNotMatch(html, /Live site/i);
     assert.doesNotMatch(html, /Use this Railway URL/);
     assert.doesNotMatch(html, /byod-card/);
+    assert.doesNotMatch(html, /Pick <strong>Ultraviolet<\/strong>/);
+    assert.doesNotMatch(html, /class="tips"/);
+    assert.doesNotMatch(html, /id="popular"/);
+    assert.doesNotMatch(html, /wikipedia\.org/);
 
     const uv = await fetch(`${base}/uv/uv.bundle.js`);
     assert.equal(uv.status, 200);

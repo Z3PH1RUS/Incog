@@ -390,11 +390,6 @@ document.getElementById("setting-forget").addEventListener("change", (event) => 
   renderHistory();
 });
 
-document.getElementById("popular").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-url]");
-  if (button) openUrl(button.dataset.url, { fromChrome: true });
-});
-
 frame.addEventListener("load", () => {
   progress.hidden = true;
 });

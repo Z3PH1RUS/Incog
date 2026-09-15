@@ -130,7 +130,7 @@ button, .go, select, input {
   font: inherit;
 }
 
-.icon-btn, .ghost, .text-btn, .chip, .go {
+.icon-btn, .ghost, .text-btn, .go {
   cursor: pointer;
 }
 
@@ -260,35 +260,7 @@ h1 em { font-style: normal; color: #c8bfff; }
   margin: 0 auto 40px;
 }
 
-.tips {
-  margin: 0 0 18px;
-  padding: 0;
-  list-style: none;
-  color: var(--muted);
-  display: grid;
-  gap: 8px;
-}
-
-.tips li {
-  background: var(--bg-elev);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 12px 14px;
-  font-size: 14px;
-}
-
-.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-
-.chip {
-  border: 1px solid var(--line);
-  background: var(--bg-elev);
-  color: var(--text);
-  border-radius: 999px;
-  padding: 8px 12px;
-  font-size: 13px;
-}
-
-.history-wrap { margin-top: 28px; }
+.history-wrap { margin-top: 8px; }
 .history-head {
   display: flex;
   justify-content: space-between;
