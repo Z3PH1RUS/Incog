@@ -101,7 +101,12 @@ body { min-height: 100vh; }
   text-decoration: none;
 }
 
-.mark, .mark svg { width: 32px; height: 32px; }
+.mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: block;
+}
 
 .wordmark {
   font-weight: 650;
@@ -320,29 +325,29 @@ h1 em { font-style: normal; color: #c8bfff; }
 .tab-strip {
   display: flex;
   flex-wrap: nowrap;
-  gap: 4px;
+  gap: 6px;
   align-items: end;
   justify-content: flex-start;
   margin: 0;
-  padding: 8px 10px 0;
+  padding: 10px 12px 0;
   overflow-x: auto;
 }
 
 .tab {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  flex: 0 1 180px;
-  max-width: 220px;
-  min-width: 92px;
-  height: 32px;
-  padding: 0 6px 0 12px;
+  gap: 8px;
+  flex: 0 1 220px;
+  max-width: 260px;
+  min-width: 140px;
+  height: 40px;
+  padding: 0 8px 0 14px;
   border: 1px solid transparent;
   border-bottom: 0;
-  border-radius: 10px 10px 0 0;
+  border-radius: 12px 12px 0 0;
   background: transparent;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tab.is-active {
@@ -361,31 +366,34 @@ h1 em { font-style: normal; color: #c8bfff; }
   padding: 0;
   font: inherit;
   cursor: pointer;
-  max-width: 160px;
+  max-width: 200px;
 }
 
 .tab-close {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: 0;
   border-radius: 999px;
   background: transparent;
   color: inherit;
   cursor: pointer;
+  font-size: 16px;
 }
 
 .tab-close:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
 
 .tab-new {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   margin: 0 0 2px 2px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 0;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
   flex: 0 0 auto;
+  font-size: 20px;
+  line-height: 1;
 }
 
 .tab-new:hover { color: var(--text); }

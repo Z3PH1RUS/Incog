@@ -278,6 +278,10 @@ function canGoBack(tab) {
   }
 }
 
+function keepChrome() {
+  return tabs.some((tab) => tab.url) || tabs.length > 1;
+}
+
 function setBrowseMode(on) {
   document.body.classList.toggle("is-browse", on);
   emptyState.hidden = on;
@@ -291,7 +295,12 @@ function showActiveTab() {
   const tab = activeTab();
   if (!tab) return;
   urlInput.value = tab.url;
-  setBrowseMode(Boolean(tab.url));
+  setBrowseMode(keepChrome());
+  if (tab.url) {
+    history.replaceState({ url: tab.url }, "", `/?url=${encodeURIComponent(tab.url)}`);
+  } else {
+    history.replaceState({}, "", "/");
+  }
   syncNavButtons();
 }
 
@@ -319,7 +328,7 @@ function createTab({ focus = true } = {}) {
   if (focus) {
     activeId = tab.id;
     urlInput.value = "";
-    setBrowseMode(false);
+    setBrowseMode(keepChrome());
     urlInput.focus();
   }
   renderTabs();
@@ -456,7 +465,7 @@ function goHome({ push = true } = {}) {
   }
   progress.hidden = true;
   urlInput.value = "";
-  setBrowseMode(false);
+  setBrowseMode(keepChrome());
   renderTabs();
   if (push) history.pushState({}, "", "/");
   urlInput.focus();
