@@ -125,20 +125,6 @@ async function ensureTransport() {
   }
 }
 
-function openExistingIdb(name) {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(name);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    // Opening a missing DB creates version 1 with no stores. Abort that so
-    // ScramjetController.init() can create the real schema instead of
-    // inheriting an empty v1 that can never upgrade.
-    request.onupgradeneeded = (event) => {
-      if (event.oldVersion === 0) event.target.transaction.abort();
-    };
-  });
-}
-
 function deleteIdb(name) {
   return new Promise((resolve) => {
     const request = indexedDB.deleteDatabase(name);
@@ -155,17 +141,31 @@ function deleteIdb(name) {
   });
 }
 
+async function scramjetDbExists() {
+  try {
+    const dbs = await indexedDB.databases();
+    return dbs.some((db) => db.name === "$scramjet");
+  } catch {
+    return false;
+  }
+}
+
 async function resetScramjetDbIfBroken() {
+  if (!(await scramjetDbExists())) return;
   let db;
   try {
-    db = await openExistingIdb("$scramjet");
+    db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open("$scramjet");
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
   } catch {
+    await deleteIdb("$scramjet");
     return;
   }
   const stale = !db.objectStoreNames.contains("config");
   db.close();
-  if (!stale) return;
-  await deleteIdb("$scramjet");
+  if (stale) await deleteIdb("$scramjet");
 }
 
 async function bootShared() {
@@ -178,12 +178,9 @@ async function bootShared() {
   return enginesReady;
 }
 
-async function ensureScramjet() {
-  await bootShared();
-  if (scramjet) return;
-  await resetScramjetDbIfBroken();
+function createScramjetController() {
   const { ScramjetController } = window.$scramjetLoadController();
-  scramjet = new ScramjetController({
+  return new ScramjetController({
     prefix: "/scramjet/",
     files: {
       wasm: "/scram/scramjet.wasm.wasm",
@@ -191,7 +188,22 @@ async function ensureScramjet() {
       sync: "/scram/scramjet.sync.js",
     },
   });
-  await scramjet.init();
+}
+
+async function ensureScramjet() {
+  await bootShared();
+  if (scramjet) return;
+  await resetScramjetDbIfBroken();
+  scramjet = createScramjetController();
+  try {
+    await scramjet.init();
+  } catch (error) {
+    console.warn("[incog] scramjet init failed, resetting $scramjet", error);
+    scramjet = null;
+    await deleteIdb("$scramjet");
+    scramjet = createScramjetController();
+    await scramjet.init();
+  }
 }
 
 function readHistory() {

@@ -11,19 +11,22 @@ const app = readFileSync(path.join(root, "public/app.js"), "utf8");
 describe("scramjet service worker routing", () => {
   it("never falls through /scramjet/ navigations to the Express 404", () => {
     assert.match(sw, /pathnameOf\(request\)\.startsWith\("\/scramjet\/"\)/);
-    assert.match(sw, /if \(isScramjetPrefix\(event\.request\)\)/);
+    assert.match(sw, /if \(!isScramjetPrefix\(event\.request\)\)/);
     assert.match(sw, /return await scramjet\.fetch\(event\)/);
-    assert.match(sw, /ensureScramjetConfig/);
+    assert.match(sw, /ensureScramjetSchema/);
+    assert.match(sw, /createObjectStore\(name\)/);
+    assert.match(sw, /schemaReady\.then\(\(\) => new ScramjetServiceWorker\(\)\)/);
+    assert.doesNotMatch(sw, /const scramjet = new ScramjetServiceWorker\(\);/);
     assert.doesNotMatch(
       sw,
       /if \(isScramjetRequest\(event\.request\)\)[\s\S]*if \(scramjet\.route\(event\)\)[\s\S]*return fetch\(event\.request\)/,
     );
   });
 
-  it("does not create an empty \$scramjet IndexedDB before init", () => {
-    assert.match(app, /function openExistingIdb/);
-    assert.match(app, /event\.oldVersion === 0/);
-    assert.match(app, /event\.target\.transaction\.abort\(\)/);
+  it("does not create an empty $scramjet IndexedDB before init", () => {
+    assert.match(app, /indexedDB\.databases\(\)/);
+    assert.match(app, /db\.name === "\$scramjet"/);
+    assert.match(app, /scramjet init failed, resetting \$scramjet/);
     assert.doesNotMatch(app, /indexedDB\.open\(name, version\)/);
     assert.doesNotMatch(app, /request\.onupgradeneeded = \(\) => \{\}/);
   });
