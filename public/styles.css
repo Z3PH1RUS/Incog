@@ -586,7 +586,12 @@ body.settings-open .workspace {
 }
 
 .hint { color: var(--faint); font-size: 12px; line-height: 1.45; }
-.panel-actions { margin-top: 18px; }
+.panel-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .text-btn { border: 0; background: none; color: var(--muted); }
 
 .toast {
@@ -601,6 +606,28 @@ body.settings-open .workspace {
   z-index: 12;
   font-size: 13px;
 }
+
+.discord-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 21;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-elev);
+  color: var(--text);
+  text-decoration: none;
+  font: 650 14px/1 inherit;
+  box-shadow: var(--shadow);
+}
+
+.discord-fab svg { width: 18px; height: 18px; }
+.discord-fab:hover { border-color: var(--accent-deep); color: var(--text); }
 
 .modal {
   position: fixed;
@@ -647,7 +674,7 @@ body.settings-open .workspace {
 #progress[hidden],
 #settings-panel[hidden],
 #ua-custom-wrap[hidden],
-#cloak-modal[hidden],
+#blank-gate[hidden],
 #toast[hidden] { display: none; }
 
 .shake { animation: shake 0.35s ease; }
@@ -663,5 +690,4 @@ body.settings-open .workspace {
   body:not(.is-browse) .go { width: 100%; }
   .engine-pill { display: none; }
   .top-actions { flex-wrap: wrap; justify-content: flex-end; }
-  .discord-btn { padding: 0 10px; }
 }

@@ -32,9 +32,13 @@ describe("standalone website server", () => {
     assert.doesNotMatch(html, /id="popular"/);
     assert.doesNotMatch(html, /wikipedia\.org/);
     assert.match(html, /about:blank/);
-    assert.match(html, /id="cloak-toggle"/);
+    assert.match(html, /id="setting-about-blank"/);
+    assert.match(html, /id="setting-auto-blank"/);
+    assert.match(html, /id="setting-auto-cloak"/);
+    assert.match(html, /id="setting-cloak-url"/);
     assert.match(html, /discord\.gg\/u85bVreUh/);
-    assert.match(html, /Join Discord/);
+    assert.match(html, /discord-fab/);
+    assert.doesNotMatch(html, /id="cloak-toggle"/);
     assert.match(html, /id="setting-search"/);
     assert.match(html, /id="tab-strip"/);
     assert.match(html, /src="\/favicon\.png\?v=4"/);

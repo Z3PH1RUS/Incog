@@ -18,6 +18,9 @@ const DEFAULTS = {
   homepage: "",
   forgetMe: false,
   searchEngine: "duckduckgo",
+  autoAboutBlank: false,
+  autoCloak: false,
+  cloakUrl: "",
 };
 
 const urlInput = document.getElementById("url-input");
@@ -35,10 +38,9 @@ const uaCustomWrap = document.getElementById("ua-custom-wrap");
 const tabStrip = document.getElementById("tab-strip");
 const navBack = document.getElementById("nav-back");
 const navReload = document.getElementById("nav-reload");
-const cloakModal = document.getElementById("cloak-modal");
-const cloakForm = document.getElementById("cloak-form");
-const cloakUrl = document.getElementById("cloak-url");
-const cloakStatus = document.getElementById("cloak-status");
+const cloakUrl = document.getElementById("setting-cloak-url");
+const cloakStatus = document.getElementById("setting-cloak-status");
+const blankGate = document.getElementById("blank-gate");
 const tabIcon = document.getElementById("tab-icon");
 
 let settings = loadSettings();
@@ -51,7 +53,14 @@ let activeId = "";
 
 function loadSettings() {
   try {
-    return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") };
+    const parsed = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+    const merged = { ...DEFAULTS, ...parsed };
+    if (!("autoCloak" in parsed)) {
+      try {
+        if (JSON.parse(localStorage.getItem(CLOAK_KEY) || "null")?.title) merged.autoCloak = true;
+      } catch {}
+    }
+    return merged;
   } catch {
     return { ...DEFAULTS };
   }
@@ -550,6 +559,9 @@ function syncSettingsUi() {
   document.getElementById("setting-ua-custom").value = settings.userAgentCustom;
   document.getElementById("setting-home").value = settings.homepage;
   document.getElementById("setting-forget").checked = settings.forgetMe;
+  document.getElementById("setting-auto-blank").checked = settings.autoAboutBlank;
+  document.getElementById("setting-auto-cloak").checked = settings.autoCloak;
+  cloakUrl.value = settings.cloakUrl;
   uaCustomWrap.hidden = settings.userAgent !== "custom";
   enginePill.textContent = settings.engine === "scramjet" ? "Scramjet" : "Ultraviolet";
 }
@@ -563,14 +575,6 @@ function setSettingsOpen(open) {
   document.body.classList.toggle("settings-open", open);
   document.getElementById("settings-toggle").setAttribute("aria-expanded", String(open));
   if (open) document.getElementById("setting-search").focus();
-}
-
-function setCloakOpen(open) {
-  cloakModal.hidden = !open;
-  if (open) {
-    cloakStatus.textContent = "";
-    cloakUrl.focus();
-  }
 }
 
 function applyCloakTo(doc, { title, icon }) {
@@ -593,7 +597,11 @@ function applyCloak(meta) {
   applyCloakTo(document, payload);
   if (tabIcon) {
     tabIcon.href = payload.icon;
-    tabIcon.type = payload.icon.startsWith("data:") ? "" : "image/svg+xml";
+    tabIcon.type = payload.icon.startsWith("data:")
+      ? ""
+      : payload.icon.includes(".png")
+        ? "image/png"
+        : "image/svg+xml";
   }
   try {
     if (window.parent !== window) applyCloakTo(window.parent.document, payload);
@@ -604,7 +612,10 @@ function loadCloak() {
   try {
     const stored = JSON.parse(localStorage.getItem(CLOAK_KEY) || "null");
     if (stored?.title) applyCloak(stored);
-  } catch {}
+    return stored;
+  } catch {
+    return null;
+  }
 }
 
 function saveCloak(meta) {
@@ -614,7 +625,54 @@ function saveCloak(meta) {
 
 function resetCloak() {
   localStorage.removeItem(CLOAK_KEY);
+  settings.cloakUrl = "";
+  saveSettings();
+  cloakUrl.value = "";
+  if (cloakStatus) cloakStatus.textContent = "";
   applyCloak({ title: DEFAULT_TITLE, icon: DEFAULT_ICON });
+}
+
+async function cloakFromUrl(raw, { quiet = false } = {}) {
+  const value = String(raw || "").trim();
+  if (!value) {
+    if (cloakStatus) cloakStatus.textContent = "Enter a site to copy.";
+    return false;
+  }
+  if (cloakStatus) cloakStatus.textContent = "Copying name and icon…";
+  try {
+    const res = await fetch(`/api/cloak?url=${encodeURIComponent(value)}`);
+    const body = await res.json();
+    if (!res.ok || !body.ok) throw new Error(body.error || "Could not copy that site.");
+    settings.cloakUrl = value;
+    saveSettings();
+    saveCloak({ title: body.title, icon: body.icon || DEFAULT_ICON });
+    if (cloakStatus) cloakStatus.textContent = `Tab is now ${body.title}`;
+    if (!quiet) toastMsg(`Tab is now ${body.title}`);
+    return true;
+  } catch (error) {
+    if (cloakStatus) cloakStatus.textContent = error.message;
+    if (!quiet) toastMsg(error.message);
+    return false;
+  }
+}
+
+async function maybeAutoCloak() {
+  if (!settings.autoCloak) return;
+  loadCloak();
+  if (settings.cloakUrl) await cloakFromUrl(settings.cloakUrl, { quiet: true });
+}
+
+function inEmbeddedFrame() {
+  try {
+    return window !== window.top;
+  } catch {
+    return true;
+  }
+}
+
+function setBlankGate(open) {
+  if (!blankGate) return;
+  blankGate.hidden = !open;
 }
 
 function paintAboutBlank(win, { title, icon, src }) {
@@ -631,12 +689,17 @@ function paintAboutBlank(win, { title, icon, src }) {
   doc.body.append(frame);
 }
 
-function openAboutBlank() {
+function openAboutBlank({ quiet = false } = {}) {
+  if (inEmbeddedFrame()) {
+    if (!quiet) toastMsg("Already inside about:blank.");
+    return null;
+  }
   const popup = window.open("about:blank", "_blank");
   if (!popup) {
-    toastMsg("Allow popups to open about:blank.");
-    return;
+    if (!quiet) toastMsg("Allow popups to open about:blank.");
+    return null;
   }
+  setBlankGate(false);
   const cloak = (() => {
     try {
       return JSON.parse(localStorage.getItem(CLOAK_KEY) || "null");
@@ -647,7 +710,7 @@ function openAboutBlank() {
   const payload = {
     title: cloak?.title || "about:blank",
     icon: cloak?.icon || DEFAULT_ICON,
-    src: `${location.origin}/${location.search}`,
+    src: location.href,
   };
   const fill = () => {
     try {
@@ -658,6 +721,12 @@ function openAboutBlank() {
   popup.addEventListener("load", fill);
   setTimeout(fill, 50);
   setTimeout(fill, 250);
+  return popup;
+}
+
+function maybeAutoAboutBlank() {
+  if (!settings.autoAboutBlank || inEmbeddedFrame()) return;
+  if (!openAboutBlank({ quiet: true })) setBlankGate(true);
 }
 
 function escapeHtml(value) {
@@ -719,28 +788,16 @@ document.getElementById("settings-toggle").addEventListener("click", () => {
   setSettingsOpen(settingsPanel.hidden);
 });
 document.getElementById("settings-close").addEventListener("click", () => setSettingsOpen(false));
-document.getElementById("about-blank").addEventListener("click", openAboutBlank);
-document.getElementById("cloak-toggle").addEventListener("click", () => setCloakOpen(true));
-document.getElementById("cloak-cancel").addEventListener("click", () => setCloakOpen(false));
-document.getElementById("cloak-reset").addEventListener("click", () => {
+document.getElementById("setting-about-blank").addEventListener("click", () => openAboutBlank());
+document.getElementById("setting-cloak-apply").addEventListener("click", () => cloakFromUrl(cloakUrl.value));
+document.getElementById("setting-cloak-reset").addEventListener("click", () => {
   resetCloak();
-  setCloakOpen(false);
   toastMsg("Tab name and icon restored");
 });
-cloakForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  cloakStatus.textContent = "Copying name and icon…";
-  try {
-    const res = await fetch(`/api/cloak?url=${encodeURIComponent(cloakUrl.value)}`);
-    const body = await res.json();
-    if (!res.ok || !body.ok) throw new Error(body.error || "Could not copy that site.");
-    saveCloak({ title: body.title, icon: body.icon || DEFAULT_ICON });
-    setCloakOpen(false);
-    toastMsg(`Tab is now ${body.title}`);
-  } catch (error) {
-    cloakStatus.textContent = error.message;
-  }
+document.getElementById("blank-gate-go").addEventListener("click", () => {
+  if (!openAboutBlank()) toastMsg("Allow popups to open about:blank.");
 });
+document.getElementById("blank-gate-dismiss").addEventListener("click", () => setBlankGate(false));
 navBack.addEventListener("click", () => {
   goBack();
 });
@@ -750,7 +807,7 @@ navReload.addEventListener("click", () => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     setSettingsOpen(false);
-    setCloakOpen(false);
+    setBlankGate(false);
   }
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "t") {
     event.preventDefault();
@@ -820,6 +877,26 @@ document.getElementById("setting-forget").addEventListener("change", (event) => 
   saveSettings();
   renderHistory();
 });
+document.getElementById("setting-auto-blank").addEventListener("change", (event) => {
+  settings.autoAboutBlank = event.target.checked;
+  saveSettings();
+});
+document.getElementById("setting-auto-cloak").addEventListener("change", (event) => {
+  settings.autoCloak = event.target.checked;
+  saveSettings();
+  if (settings.autoCloak) maybeAutoCloak();
+  else applyCloak({ title: DEFAULT_TITLE, icon: DEFAULT_ICON });
+});
+document.getElementById("setting-cloak-url").addEventListener("change", (event) => {
+  settings.cloakUrl = event.target.value.trim();
+  saveSettings();
+});
+document.getElementById("setting-cloak-url").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    cloakFromUrl(cloakUrl.value);
+  }
+});
 
 window.addEventListener("popstate", (event) => {
   const url = event.state?.url || new URLSearchParams(location.search).get("url");
@@ -836,7 +913,6 @@ matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
 });
 
 applyTheme();
-loadCloak();
 syncSettingsUi();
 renderHistory();
 createTab();
@@ -847,3 +923,7 @@ if (bootUrl) {
 } else {
   urlInput.focus();
 }
+
+maybeAutoCloak().finally(() => {
+  maybeAutoAboutBlank();
+});
