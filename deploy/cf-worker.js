@@ -1,23 +1,14 @@
 const DEFAULT_ORIGIN = "incog-production-591c.up.railway.app";
 
+// Cloudflare cannot run Incog (no long-lived Node, no Wisp). This Worker is
+// only a public hostname: it forwards HTTP and /wisp/ WebSocket upgrades to
+// Railway with the origin Host header, which avoids Railway's train 404.
 export default {
   async fetch(request, env) {
-    const incoming = new URL(request.url);
     const originHost = env.ORIGIN || DEFAULT_ORIGIN;
-    const outbound = new URL(incoming.toString());
+    const outbound = new URL(request.url);
     outbound.hostname = originHost;
     outbound.protocol = "https:";
-
-    const headers = new Headers(request.headers);
-    headers.set("Host", originHost);
-    headers.set("X-Forwarded-Host", incoming.hostname);
-    headers.set("X-Forwarded-Proto", "https");
-
-    return fetch(outbound.toString(), {
-      method: request.method,
-      headers,
-      body: request.body,
-      redirect: "manual",
-    });
+    return fetch(outbound, request);
   },
 };

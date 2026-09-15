@@ -170,15 +170,28 @@ INCOG_DOMAIN=incog.example.com docker compose up -d --build
 
 Point an A record at that machine. Caddy gets the certificate.
 
-**Same idea while Incog stays on Railway:** deploy `deploy/cf-worker.js` with Wrangler. Cloudflare issues HTTPS and rewrites `Host` to `incog-production-591c.up.railway.app`, so you never see Railway’s train 404.
+### Cloudflare (in front of Railway)
+
+Incog cannot run **on** Cloudflare Pages or a Worker as the app. Those have no long-lived Node process, so `/wisp/` browsing would fail. Keep Railway as the origin. Cloudflare is only the public URL.
+
+1. Create a free account at [dash.cloudflare.com](https://dash.cloudflare.com).
+2. On a machine where you can log in (browser login):
 
 ```bash
-cd deploy && npx wrangler deploy
+cd deploy
+npx wrangler login
+npx wrangler deploy
 ```
 
-That gives a `*.workers.dev` URL. To keep `incog.freeddns.org`, add that hostname as a Cloudflare zone, put Cloudflare **NS** records on Dynu (delete the Railway CNAME), and attach the Worker route.
+3. Wrangler prints a URL like `https://incog.<account>.workers.dev`. That is Incog on Cloudflare; it still proxies to `incog-production-591c.up.railway.app`.
 
-Dynu CNAME → Railway still needs a TXT and will 404 until both records match. That is why nowgg.fun does not do it that way.
+**Your own domain** (example: `incog.example.com`):
+
+1. Add the domain to Cloudflare (use Cloudflare nameservers).
+2. In **Workers & Pages** → this worker → **Settings** → **Domains & Routes** → **Add** → Custom domain `incog.example.com`.
+3. Do **not** CNAME the domain straight at Railway with the orange cloud. Cloudflare would send `Host: incog.example.com`, Railway would 404 the train page. The Worker rewrites the host to the Railway URL, which is why this path works.
+
+Grey-cloud (DNS only) CNAME to Railway only works after you add that same hostname as a custom domain **in Railway** and finish Railway’s TXT check. The Worker skips that.
 
 ### Docker / VPS
 
