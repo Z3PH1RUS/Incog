@@ -149,10 +149,12 @@ button, .go, select, input {
   background: transparent;
   color: var(--muted);
   padding: 0 12px;
+  text-decoration: none;
 }
 
 .icon-btn { display: inline-flex; align-items: center; gap: 6px; }
 .icon-btn svg { width: 16px; height: 16px; }
+a.ghost { display: inline-flex; align-items: center; }
 .icon-btn:hover, .ghost:hover, .text-btn:hover { color: var(--text); }
 
 .shell {
@@ -190,11 +192,13 @@ body.is-browse .go {
 }
 
 body.is-browse .hero-block {
+  position: relative;
+  z-index: 4;
   width: 100%;
   margin: 0;
   padding: 0;
   text-align: left;
-  background: color-mix(in srgb, var(--bg-bar) 92%, transparent);
+  background: var(--bg-bar);
   border-bottom: 1px solid var(--line);
 }
 
@@ -326,6 +330,8 @@ h1 em { font-style: normal; color: var(--accent); }
 }
 
 .tab-strip {
+  position: relative;
+  z-index: 5;
   display: flex;
   flex-wrap: nowrap;
   gap: 6px;
@@ -334,6 +340,7 @@ h1 em { font-style: normal; color: var(--accent); }
   margin: 0;
   padding: 10px 12px 0;
   overflow-x: auto;
+  pointer-events: auto;
 }
 
 .tab {
@@ -351,6 +358,10 @@ h1 em { font-style: normal; color: var(--accent); }
   background: transparent;
   color: var(--muted);
   font-size: 14px;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  touch-action: manipulation;
 }
 
 .tab.is-active {
@@ -359,7 +370,17 @@ h1 em { font-style: normal; color: var(--accent); }
   border-color: var(--line);
 }
 
+.tab:hover:not(.is-active) {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+
 .tab-label {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: block;
+  line-height: 40px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -369,7 +390,8 @@ h1 em { font-style: normal; color: var(--accent); }
   padding: 0;
   font: inherit;
   cursor: pointer;
-  max-width: 200px;
+  text-align: left;
+  pointer-events: none;
 }
 
 .tab-close {
@@ -381,6 +403,9 @@ h1 em { font-style: normal; color: var(--accent); }
   color: inherit;
   cursor: pointer;
   font-size: 16px;
+  flex: 0 0 auto;
+  pointer-events: auto;
+  z-index: 1;
 }
 
 .tab-close:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
@@ -397,6 +422,7 @@ h1 em { font-style: normal; color: var(--accent); }
   flex: 0 0 auto;
   font-size: 20px;
   line-height: 1;
+  pointer-events: auto;
 }
 
 .tab-new:hover { color: var(--text); }
@@ -449,6 +475,8 @@ h1 em { font-style: normal; color: var(--accent); }
 }
 
 .frame-wrap {
+  position: relative;
+  z-index: 0;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -468,6 +496,8 @@ iframe {
   border: 0;
   background: #111;
   min-height: 52vh;
+  position: relative;
+  z-index: 0;
 }
 
 iframe[hidden] { display: none; }
@@ -633,4 +663,5 @@ body.settings-open .workspace {
   body:not(.is-browse) .go { width: 100%; }
   .engine-pill { display: none; }
   .top-actions { flex-wrap: wrap; justify-content: flex-end; }
+  .discord-btn { padding: 0 10px; }
 }

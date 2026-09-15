@@ -232,24 +232,39 @@ function tabTitle(url) {
 }
 
 function renderTabs() {
+  const existing = [...tabStrip.querySelectorAll("[data-tab-id]")];
+  const addBtn = tabStrip.querySelector(".tab-new");
+  if (existing.length === tabs.length && addBtn) {
+    tabs.forEach((tab, index) => {
+      const wrap = existing[index];
+      wrap.dataset.tabId = tab.id;
+      wrap.classList.toggle("is-active", tab.id === activeId);
+      wrap.setAttribute("aria-selected", tab.id === activeId ? "true" : "false");
+      wrap.title = tab.title;
+      const label = wrap.querySelector(".tab-label");
+      if (label) label.textContent = tab.title;
+    });
+    syncNavButtons();
+    return;
+  }
+
   tabStrip.replaceChildren();
+  tabStrip.setAttribute("role", "tablist");
   for (const tab of tabs) {
     const wrap = document.createElement("div");
     wrap.className = `tab${tab.id === activeId ? " is-active" : ""}`;
-    const label = document.createElement("button");
-    label.type = "button";
+    wrap.dataset.tabId = tab.id;
+    wrap.setAttribute("role", "tab");
+    wrap.setAttribute("aria-selected", tab.id === activeId ? "true" : "false");
+    wrap.title = tab.title;
+    const label = document.createElement("span");
     label.className = "tab-label";
     label.textContent = tab.title;
-    label.addEventListener("click", () => selectTab(tab.id));
     const close = document.createElement("button");
     close.type = "button";
     close.className = "tab-close";
-    close.setAttribute("aria-label", "Close tab");
+    close.setAttribute("aria-label", `Close ${tab.title}`);
     close.textContent = "×";
-    close.addEventListener("click", (event) => {
-      event.stopPropagation();
-      closeTab(tab.id);
-    });
     wrap.append(label, close);
     tabStrip.append(wrap);
   }
@@ -259,10 +274,28 @@ function renderTabs() {
   add.title = "New tab";
   add.setAttribute("aria-label", "New tab");
   add.textContent = "+";
-  add.addEventListener("click", () => createTab());
   tabStrip.append(add);
   syncNavButtons();
 }
+
+tabStrip.addEventListener("pointerdown", (event) => {
+  if (event.button != null && event.button !== 0) return;
+  const close = event.target.closest(".tab-close");
+  if (close) {
+    event.preventDefault();
+    event.stopPropagation();
+    const id = close.closest("[data-tab-id]")?.dataset.tabId;
+    if (id) closeTab(id);
+    return;
+  }
+  if (event.target.closest(".tab-new")) {
+    event.preventDefault();
+    createTab();
+    return;
+  }
+  const tabEl = event.target.closest("[data-tab-id]");
+  if (tabEl?.dataset.tabId) selectTab(tabEl.dataset.tabId);
+});
 
 function syncNavButtons() {
   const tab = activeTab();
