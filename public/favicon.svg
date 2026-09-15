@@ -1,18 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="incog-bg" x1="10" y1="2" x2="58" y2="62">
-      <stop stop-color="#9b8cff"/>
-      <stop offset="1" stop-color="#4a3ca8"/>
+    <linearGradient id="tile" x1="12" y1="0" x2="52" y2="64">
+      <stop offset="0" stop-color="#9a8cf5"/>
+      <stop offset=".48" stop-color="#6d5ed6"/>
+      <stop offset="1" stop-color="#3b2f86"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="32" y1="12" x2="32" y2="54">
+      <stop offset="0" stop-color="#2c2740"/>
+      <stop offset="1" stop-color="#121018"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="16" fill="url(#incog-bg)"/>
-  <path d="M16 27.5c.6-8.4 7.4-14.5 16-14.5s15.4 6.1 16 14.5c.1 1.3-1 2.3-2.3 2.3H18.3c-1.3 0-2.4-1-2.3-2.3Z" fill="#121018"/>
-  <rect x="11" y="27" width="42" height="5.2" rx="2.6" fill="#f4f0ff"/>
-  <circle cx="24.2" cy="42" r="7.2" fill="#121018"/>
-  <circle cx="39.8" cy="42" r="7.2" fill="#121018"/>
-  <circle cx="24.2" cy="42" r="3.1" fill="#c8bfff"/>
-  <circle cx="39.8" cy="42" r="3.1" fill="#c8bfff"/>
-  <path d="M31.2 42h1.6" stroke="#f4f0ff" stroke-width="2.4" stroke-linecap="round"/>
-  <path d="M17.2 42H14.6c-1.4 0-2.1-1.6-1.2-2.7 1.4-1.6 3.4-2.7 4.8-3.1" stroke="#121018" stroke-width="2.2" stroke-linecap="round"/>
-  <path d="M46.8 42h2.6c1.4 0 2.1-1.6 1.2-2.7-1.4-1.6-3.4-2.7-4.8-3.1" stroke="#121018" stroke-width="2.2" stroke-linecap="round"/>
+  <rect width="64" height="64" rx="18" fill="url(#tile)"/>
+  <path d="M21 31c.3-9.4 5.2-16.2 11-16.2S42.7 21.6 43 31" fill="url(#ink)"/>
+  <rect x="12.5" y="28.5" width="39" height="5.2" rx="2.6" fill="#f6f2ff"/>
+  <circle cx="24.2" cy="44.6" r="8.1" fill="url(#ink)"/>
+  <circle cx="39.8" cy="44.6" r="8.1" fill="url(#ink)"/>
+  <path d="M31.4 44.6h1.2" stroke="#121018" stroke-width="3.6" stroke-linecap="round"/>
+  <circle cx="24.2" cy="44.6" r="4.15" fill="none" stroke="#efeaff" stroke-width="1.9"/>
+  <circle cx="39.8" cy="44.6" r="4.15" fill="none" stroke="#efeaff" stroke-width="1.9"/>
 </svg>
