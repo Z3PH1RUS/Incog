@@ -35,7 +35,7 @@ describe("standalone website server", () => {
     assert.match(html, /id="cloak-toggle"/);
     assert.match(html, /id="setting-search"/);
     assert.match(html, /id="tab-strip"/);
-    assert.match(html, /src="\/favicon\.svg"/);
+    assert.match(html, /src="\/favicon\.svg\?v=2"/);
     assert.match(html, /id="tab-strip"[\s\S]*id="nav-form"/);
     assert.match(html, /id="nav-back"/);
     assert.match(html, /id="nav-reload"/);
