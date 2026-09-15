@@ -277,7 +277,7 @@ h1 em { font-style: normal; color: #c8bfff; }
   font-size: 14px;
 }
 
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 
 .chip {
   border: 1px solid var(--line);
@@ -429,119 +429,6 @@ iframe {
 #settings-panel[hidden],
 #ua-custom-wrap[hidden],
 #toast[hidden] { display: none; }
-
-.byod-card {
-  margin: 22px 0 8px;
-  padding: 18px 16px 16px;
-  border: 1px solid var(--line-strong);
-  border-radius: 16px;
-  background: var(--bg-elev);
-  text-align: left;
-}
-
-.byod-card h2 {
-  margin: 8px 0 6px;
-  font-size: 1.15rem;
-  letter-spacing: -0.03em;
-}
-
-.byod-card p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
-
-.byod-steps {
-  margin: 0 0 14px;
-  padding-left: 1.2rem;
-  color: var(--muted);
-  font-size: 14px;
-  display: grid;
-  gap: 8px;
-}
-
-.byod-steps a { color: var(--accent); }
-
-.byod-callout {
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line-strong));
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--accent) 12%, var(--bg));
-  color: var(--text);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.byod-callout code {
-  font: 500 12px/1.4 ui-monospace, "Cascadia Code", monospace;
-}
-
-.dns-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 10px;
-}
-
-.dns-row-primary {
-  padding: 10px 12px;
-  border: 1px solid var(--line-strong);
-  border-radius: 12px;
-  background: var(--bg);
-}
-
-.byod-cname-alt {
-  margin: 4px 0 10px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.byod-cname-alt summary {
-  cursor: pointer;
-  margin-bottom: 8px;
-}
-
-.dns-type {
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  padding: 4px 8px;
-}
-
-.dns-row code {
-  flex: 1;
-  min-width: 12ch;
-  font: 500 13px/1.4 ui-monospace, "Cascadia Code", monospace;
-  color: var(--text);
-  overflow-wrap: anywhere;
-}
-
-.dns-row-stack {
-  align-items: flex-start;
-}
-
-.dns-row-stack code {
-  flex: 1 1 100%;
-  order: 3;
-}
-
-.byod-form {
-  display: flex;
-  gap: 8px;
-  margin: 12px 0 8px;
-}
-
-.byod-form input {
-  flex: 1;
-  min-width: 0;
-  height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--bg);
-  color: var(--text);
-  padding: 0 12px;
-}
 
 .shake { animation: shake 0.35s ease; }
 @keyframes shake {

@@ -28,13 +28,6 @@ const settingsPanel = document.getElementById("settings-panel");
 const enginePill = document.getElementById("engine-pill");
 const toast = document.getElementById("toast");
 const uaCustomWrap = document.getElementById("ua-custom-wrap");
-const byodCname = document.getElementById("byod-cname");
-const byodForm = document.getElementById("byod-form");
-const byodDomain = document.getElementById("byod-domain");
-const byodStatus = document.getElementById("byod-status");
-const byodCopy = document.getElementById("byod-copy");
-const byodToggle = document.getElementById("byod-toggle");
-const byodCard = document.getElementById("byod-card");
 
 let settings = loadSettings();
 let memoryHistory = [];
@@ -340,90 +333,6 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") setSettingsOpen(false);
 });
 
-byodToggle?.addEventListener("click", () => {
-  goHome({ push: false });
-  byodCard?.scrollIntoView({ behavior: "smooth", block: "center" });
-  byodDomain?.focus();
-});
-
-byodCopy?.addEventListener("click", async () => {
-  const value = byodCname?.textContent?.trim();
-  if (!value) return;
-  try {
-    await navigator.clipboard.writeText(value);
-    toastMsg("CNAME target copied");
-  } catch {
-    toastMsg(value);
-  }
-});
-
-document.getElementById("byod-copy-txt-host")?.addEventListener("click", async () => {
-  const value = document.getElementById("byod-txt-host")?.textContent?.trim();
-  if (!value) return;
-  try {
-    await navigator.clipboard.writeText(value);
-    toastMsg("TXT hostname copied");
-  } catch {
-    toastMsg(value);
-  }
-});
-
-document.getElementById("byod-copy-txt")?.addEventListener("click", async () => {
-  const value = document.getElementById("byod-txt")?.textContent?.trim();
-  if (!value) return;
-  try {
-    await navigator.clipboard.writeText(value);
-    toastMsg("TXT value copied");
-  } catch {
-    toastMsg(value);
-  }
-});
-
-function applyByodRecords(records, domain) {
-  if (!records) return;
-  if (byodCname && records.cname) byodCname.textContent = records.cname;
-  const txtHost = document.getElementById("byod-txt-host");
-  const txtVal = document.getElementById("byod-txt");
-  if (txtHost && records.txtName) txtHost.textContent = records.txtName;
-  if (txtVal && records.txt) txtVal.textContent = records.txt;
-  if (domain && byodDomain && !byodDomain.value) byodDomain.value = domain;
-}
-
-byodForm?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  byodStatus.textContent = "Checking Railway DNS…";
-  try {
-    const res = await fetch("/api/byod", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ domain: byodDomain.value }),
-    });
-    const body = await res.json();
-    if (!res.ok) throw new Error(body.error || "Could not attach that domain.");
-    applyByodRecords(body.records, body.domain);
-    byodStatus.textContent = body.message;
-    toastMsg(body.verified ? `https://${body.domain}` : "Custom domains are paused");
-  } catch (error) {
-    byodStatus.textContent = error.message;
-  }
-});
-
-async function loadByod() {
-  try {
-    const res = await fetch("/api/byod");
-    const body = await res.json();
-    const hints = body.hints || {};
-    const known = Object.keys(hints)[0];
-    if (known) {
-      applyByodRecords(hints[known], known);
-    } else if (body.cname && byodCname) {
-      byodCname.textContent = body.cname;
-    }
-  } catch {
-    // keep the HTML fallback
-  }
-}
-
 document.getElementById("theme-toggle").addEventListener("click", () => {
   const order = ["dark", "light", "system"];
   settings.theme = order[(order.indexOf(settings.theme) + 1) % order.length];
@@ -507,7 +416,6 @@ matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
 applyTheme();
 syncSettingsUi();
 renderHistory();
-loadByod();
 
 const bootUrl = new URLSearchParams(location.search).get("url") || settings.homepage;
 if (bootUrl) {

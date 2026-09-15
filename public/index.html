@@ -48,9 +48,6 @@
             <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/>
           </svg>
         </button>
-        <button type="button" class="icon-btn" id="byod-toggle" title="Live site URL" aria-label="Live site URL">
-          Site
-        </button>
         <button type="button" class="icon-btn" id="settings-toggle" aria-expanded="false" aria-controls="settings-panel">
           Settings
         </button>
@@ -93,36 +90,6 @@
               <li>Private, loopback, and cloud-metadata hosts are blocked on the Wisp server.</li>
               <li>Recents stay in this browser unless you enable Forget me on exit.</li>
             </ul>
-            <article class="byod-card" id="byod-card">
-              <p class="badge">Live site</p>
-              <h2>Use this Railway URL</h2>
-              <p>Incog is <a href="https://incog-production-591c.up.railway.app/">incog-production-591c.up.railway.app</a>. Custom domains are paused — type a site in the bar above.</p>
-              <details class="byod-cname-alt">
-                <summary>Custom domain (paused)</summary>
-                <p class="hint">nowgg.fun uses Cloudflare + Caddy, not Railway. A Worker lives in <code>deploy/cf-worker.js</code>. Dynu CNAME for <code>incog.freeddns.org</code> is parked.</p>
-                <form class="byod-form" id="byod-form">
-                  <label class="sr-only" for="byod-domain">Your domain</label>
-                  <input id="byod-domain" name="domain" type="text" spellcheck="false" placeholder="incog.freeddns.org" autocomplete="off">
-                  <button type="submit" class="go">Attach</button>
-                </form>
-                <div class="dns-row dns-row-primary">
-                  <span class="dns-type">CNAME</span>
-                  <code id="byod-cname">2q9gavwd.up.railway.app</code>
-                  <button type="button" class="ghost" id="byod-copy">Copy CNAME</button>
-                </div>
-                <div class="dns-row">
-                  <span class="dns-type">TXT name</span>
-                  <code id="byod-txt-host">_railway-verify</code>
-                  <button type="button" class="ghost" id="byod-copy-txt-host">Copy name</button>
-                </div>
-                <div class="dns-row dns-row-stack">
-                  <span class="dns-type">TXT value</span>
-                  <button type="button" class="ghost" id="byod-copy-txt">Copy TXT</button>
-                  <code id="byod-txt">railway-verify=bd987f426bf453b447c1253ca856a2ca53310b0c5a9cb5314538370feae76635</code>
-                </div>
-              </details>
-              <p class="hint" id="byod-status"></p>
-            </article>
             <div class="chips" id="popular">
               <button type="button" class="chip" data-url="https://example.com">example.com</button>
               <button type="button" class="chip" data-url="https://wikipedia.org">wikipedia.org</button>
