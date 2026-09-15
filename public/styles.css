@@ -167,8 +167,67 @@ button, .go, select, input {
   text-align: center;
 }
 
-body.is-browse .hero-copy { display: none; }
-body.is-browse .hero-block { padding: 14px 0 10px; }
+body:not(.is-browse) .tab-strip { display: none; }
+
+body.is-browse .topbar {
+  padding: 8px 12px;
+}
+
+body.is-browse .engine-pill,
+body.is-browse .wordmark,
+body.is-browse .hero-copy,
+body.is-browse .quick-actions,
+body.is-browse .go {
+  display: none;
+}
+
+body.is-browse .hero-block {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  background: color-mix(in srgb, var(--bg-bar) 92%, transparent);
+  border-bottom: 1px solid var(--line);
+}
+
+body.is-browse .launch {
+  padding: 6px 10px 8px;
+}
+
+body.is-browse .bar {
+  border-radius: 10px;
+  padding: 2px 8px;
+  box-shadow: none;
+  background: var(--bg);
+}
+
+body.is-browse .bar:focus-within {
+  box-shadow: 0 0 0 2px rgba(139, 124, 240, 0.16);
+}
+
+body.is-browse .bar input {
+  height: 30px;
+  font-size: 13px;
+}
+
+body.is-browse .nav-btn {
+  width: 28px;
+  height: 28px;
+}
+
+body.is-browse .nav-btn svg,
+body.is-browse .lock svg {
+  width: 15px;
+  height: 15px;
+}
+
+body.is-browse .frame-wrap {
+  border-top: 0;
+}
+
+body.is-browse iframe {
+  min-height: 0;
+}
 
 .badge {
   display: inline-flex;
@@ -260,30 +319,36 @@ h1 em { font-style: normal; color: #c8bfff; }
 
 .tab-strip {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-  margin-top: 12px;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: end;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 8px 10px 0;
+  overflow-x: auto;
 }
 
 .tab {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  max-width: min(220px, 70vw);
+  flex: 0 1 180px;
+  max-width: 220px;
+  min-width: 92px;
   height: 32px;
   padding: 0 6px 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--bg-elev);
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: transparent;
   color: var(--muted);
   font-size: 12px;
 }
 
 .tab.is-active {
   color: var(--text);
-  border-color: var(--line-strong);
-  box-shadow: 0 0 0 2px rgba(139, 124, 240, 0.16);
+  background: var(--bg);
+  border-color: var(--line);
 }
 
 .tab-label {
@@ -312,13 +377,15 @@ h1 em { font-style: normal; color: #c8bfff; }
 .tab-close:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
 
 .tab-new {
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  border: 1px dashed var(--line-strong);
+  width: 28px;
+  height: 28px;
+  margin: 0 0 2px 2px;
+  border-radius: 8px;
+  border: 0;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
+  flex: 0 0 auto;
 }
 
 .tab-new:hover { color: var(--text); }
@@ -550,8 +617,9 @@ body.settings-open .workspace {
 }
 
 @media (max-width: 820px) {
-  .bar { flex-wrap: wrap; }
-  .bar input, .go { width: 100%; }
+  body:not(.is-browse) .bar { flex-wrap: wrap; }
+  body:not(.is-browse) .bar input,
+  body:not(.is-browse) .go { width: 100%; }
   .engine-pill { display: none; }
   .top-actions { flex-wrap: wrap; justify-content: flex-end; }
 }
